@@ -1,6 +1,6 @@
 // ***************************************************************************
 // ***************************************************************************
-// Copyright 2014 - 2017 (c) Analog Devices, Inc. All rights reserved.
+// Copyright 2019 - 2020 (c) Analog Devices, Inc. All rights reserved.
 //
 // In this HDL repository, there are many different and unique modules, consisting
 // of various HDL (Verilog or VHDL) components. The individual modules are
@@ -63,12 +63,14 @@ module system_top (
   inout   [1:0]   btn,
   inout   [5:0]   led,
 
-  inout           ad77681_reset,
+  inout           ad77681_shutdown,
+  inout           ad77681_reset_adc,
+  inout           ad77681_csb_aux,
+  inout           ad77681_sw_ff,
+  inout           ad77681_drdy_aux,
+  inout           ad77681_blue_led,
+  inout           ad77681_yellow_led,
   inout           ad77681_sync_in,
-
-  inout           ad77681_fda_dis,
-  inout           ad77681_fda_mode,
-  inout           ad77681_dac_buf_en,
 
   input           ad77681_spi_miso,
   output          ad77681_spi_mosi,
@@ -103,20 +105,23 @@ module system_top (
   assign gpio_i[31:8] = gpio_o[31:8];
 
   ad_iobuf #(
-    .DATA_WIDTH(6)
+    .DATA_WIDTH(9)
   ) i_iobuf_ad77681_gpio (
-    .dio_t(gpio_t[37:32]),
-    .dio_i(gpio_o[37:32]),
-    .dio_o(gpio_i[37:32]),
+    .dio_t(gpio_t[40:32]),
+    .dio_i(gpio_o[40:32]),
+    .dio_o(gpio_i[40:32]),
     .dio_p({
-           ad77681_drdy,
-           ad77681_fda_dis,
-           ad77681_fda_mode,
-           ad77681_dac_buf_en,
+	   ad77681_shutdown,
+           ad77681_reset_adc,
+           ad77681_csb_aux,
+           ad77681_sw_ff,
+           ad77681_drdy_aux,
+           ad77681_blue_led,
+           ad77681_yellow_led,
            ad77681_sync_in,
-           ad77681_reset}));
+           ad77681_drdy}));
 
-  assign gpio_i[63:38] = gpio_o[63:38];
+  assign gpio_i[63:41] = gpio_o[63:41];
 
   system_wrapper i_system_wrapper (
     .ddr_addr (ddr_addr),

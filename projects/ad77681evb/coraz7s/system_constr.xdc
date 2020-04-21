@@ -8,12 +8,16 @@ set_property -dict {PACKAGE_PIN  U15 IOSTANDARD LVCMOS33}                       
 
 # reset and GPIO signals
 
-set_property -dict {PACKAGE_PIN  T15 IOSTANDARD LVCMOS33}                           [get_ports ad77681_reset]       ; ## CK_IO3
-set_property -dict {PACKAGE_PIN  M18 IOSTANDARD LVCMOS33}                           [get_ports ad77681_fda_dis]     ; ## CK_IO9
-set_property -dict {PACKAGE_PIN  N18 IOSTANDARD LVCMOS33}                           [get_ports ad77681_fda_mode]    ; ## CK_IO8
-set_property -dict {PACKAGE_PIN  V18 IOSTANDARD LVCMOS33}                           [get_ports ad77681_dac_buf_en]  ; ## CK_IO5
+set_property -dict {PACKAGE_PIN  M18 IOSTANDARD LVCMOS33}                           [get_ports ad77681_shutdown]    ; ## CK_IO9
+set_property -dict {PACKAGE_PIN  R14 IOSTANDARD LVCMOS33}                           [get_ports ad77681_reset_adc]   ; ## CK_IO7
+set_property -dict {PACKAGE_PIN  V18 IOSTANDARD LVCMOS33}                           [get_ports ad77681_csb_aux]     ; ## CK_IO5
+set_property -dict {PACKAGE_PIN  V17 IOSTANDARD LVCMOS33}                           [get_ports ad77681_sw_ff]       ; ## CK_IO4
+set_property -dict {PACKAGE_PIN  T15 IOSTANDARD LVCMOS33}                           [get_ports ad77681_drdy_aux]    ; ## CK_IO3
+set_property -dict {PACKAGE_PIN  V13 IOSTANDARD LVCMOS33}                           [get_ports ad77681_blue_led]    ; ## CK_IO1
+set_property -dict {PACKAGE_PIN  U14 IOSTANDARD LVCMOS33}                           [get_ports ad77681_yellow_led]  ; ## CK_IO0
+
 
 # syncronization and timing
 
-set_property -dict {PACKAGE_PIN  T14 IOSTANDARD LVCMOS33}                           [get_ports ad77681_drdy]        ; ## CK_IO2
 set_property -dict {PACKAGE_PIN  R17 IOSTANDARD LVCMOS33}                           [get_ports ad77681_sync_in]     ; ## CK_IO6
+set_property -dict {PACKAGE_PIN  T14 IOSTANDARD LVCMOS33}                           [get_ports ad77681_drdy]        ; ## CK_IO2
