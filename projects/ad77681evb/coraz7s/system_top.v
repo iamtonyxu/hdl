@@ -62,6 +62,9 @@ module system_top (
 
   inout   [1:0]   btn,
   inout   [5:0]   led,
+  
+  inout           iic_ad77681_scl_io,
+  inout           iic_ad77681_sda_io,
 
   inout           ad77681_shutdown,
   inout           ad77681_reset_adc,
@@ -154,6 +157,8 @@ module system_top (
     .adc_spi_cs (ad77681_spi_cs),
     .adc_spi_sclk (ad77681_spi_sclk),
     .adc_data_ready (ad77681_drdy),
+    .iic_ad77681_scl_io (iic_ad77681_scl_io),
+    .iic_ad77681_sda_io (iic_ad77681_sda_io),
     .spi0_clk_i (1'b0),
     .spi0_clk_o (),
     .spi0_csn_0_o (),

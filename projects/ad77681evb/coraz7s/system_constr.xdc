@@ -16,8 +16,10 @@ set_property -dict {PACKAGE_PIN  T15 IOSTANDARD LVCMOS33}                       
 set_property -dict {PACKAGE_PIN  V13 IOSTANDARD LVCMOS33}                           [get_ports ad77681_blue_led]    ; ## CK_IO1
 set_property -dict {PACKAGE_PIN  U14 IOSTANDARD LVCMOS33}                           [get_ports ad77681_yellow_led]  ; ## CK_IO0
 
-
 # syncronization and timing
 
 set_property -dict {PACKAGE_PIN  R17 IOSTANDARD LVCMOS33}                           [get_ports ad77681_sync_in]     ; ## CK_IO6
 set_property -dict {PACKAGE_PIN  T14 IOSTANDARD LVCMOS33}                           [get_ports ad77681_drdy]        ; ## CK_IO2
+
+set_property -dict {PACKAGE_PIN  P16 IOSTANDARD LVCMOS33}                           [get_ports iic_ad77681_scl_io]  ; ## CK_SCL
+set_property -dict {PACKAGE_PIN  P15 IOSTANDARD LVCMOS33}                           [get_ports iic_ad77681_sda_io]  ; ## CK_SDA

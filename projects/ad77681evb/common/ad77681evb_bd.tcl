@@ -1,7 +1,15 @@
 
 create_bd_intf_port -mode Master -vlnv analog.com:interface:spi_master_rtl:1.0 adc_spi
+create_bd_intf_port -mode Master -vlnv xilinx.com:interface:iic_rtl:1.0 iic_ad77681
 
 create_bd_port -dir I adc_data_ready
+
+
+ad_ip_instance axi_iic axi_iic_ad77681
+ad_connect iic_ad77681 axi_iic_ad77681/iic
+
+#ad_connect  sys_concat_intc/In11  axi_iic_ad77681/iic2intc_irpt
+ad_cpu_interrupt "ps-8" "mb-8" axi_iic_ad77681/iic2intc_irpt
 
 # create a SPI Engine architecture for ADC
 
@@ -94,6 +102,7 @@ ad_connect  axi_ad77681_dma/s_axis spi_adc/M_AXIS_SAMPLE
 
 ad_cpu_interconnect 0x44a00000 spi_adc/axi_regmap
 ad_cpu_interconnect 0x44a30000 axi_ad77681_dma
+ad_cpu_interconnect 0x44a40000 axi_iic_ad77681
 
 ad_connect sys_40m_clk axi_ad77681_dma/s_axis_aclk
 
