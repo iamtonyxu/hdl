@@ -57,7 +57,7 @@ ad_ip_files axi_ad9361 [list\
 ad_ip_parameter ID INTEGER 0
 ad_ip_parameter MODE_1R1T INTEGER 0
 ad_ip_parameter TDD_DISABLE INTEGER 0
-ad_ip_parameter CMOS_OR_LVDS_N INTEGER 0
+ad_ip_parameter CMOS_OR_LVDS_N INTEGER 1
 ad_ip_parameter ADC_DATAPATH_DISABLE INTEGER 0
 ad_ip_parameter ADC_USERPORTS_DISABLE INTEGER 0
 ad_ip_parameter ADC_DATAFORMAT_DISABLE INTEGER 0

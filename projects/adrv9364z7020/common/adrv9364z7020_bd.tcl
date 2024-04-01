@@ -37,8 +37,8 @@ set otg_vbusoc      [create_bd_port -dir I otg_vbusoc]
 # instance: sys_ps7
 
 ad_ip_instance processing_system7 sys_ps7
-ad_ip_parameter sys_ps7 CONFIG.PCW_PRESET_BANK0_VOLTAGE "LVCMOS 1.8V"
-ad_ip_parameter sys_ps7 CONFIG.PCW_PRESET_BANK1_VOLTAGE "LVCMOS 1.8V"
+ad_ip_parameter sys_ps7 CONFIG.PCW_PRESET_BANK0_VOLTAGE "LVCMOS 2.5V"
+ad_ip_parameter sys_ps7 CONFIG.PCW_PRESET_BANK1_VOLTAGE "LVCMOS 2.5V"
 ad_ip_parameter sys_ps7 CONFIG.PCW_PACKAGE_NAME fbg676
 ad_ip_parameter sys_ps7 CONFIG.PCW_GPIO_MIO_GPIO_ENABLE 1
 ad_ip_parameter sys_ps7 CONFIG.PCW_ENET0_PERIPHERAL_ENABLE 1
@@ -384,7 +384,7 @@ set_property CONFIG.MODE_1R1T 1 [get_bd_cells axi_ad9361]
 ## interface type - CMOS (1) or LVDS (0) (default is LVDS)
 ## CMOS allows core to run at a lower rate (1/2 of LVDS)
 
-set_property CONFIG.CMOS_OR_LVDS_N 0  [get_bd_cells axi_ad9361]
+set_property CONFIG.CMOS_OR_LVDS_N 1  [get_bd_cells axi_ad9361]
 
 ## data-path disable (global control)- allows removal of DSP functions within the core.
 ## also removes the corresponding AXI control interface registers

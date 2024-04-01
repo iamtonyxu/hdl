@@ -47,7 +47,7 @@ module axi_ad9361 #(
   parameter   DEV_PACKAGE = 0,
   parameter   TDD_DISABLE = 0,
   parameter   PPS_RECEIVER_ENABLE = 0,
-  parameter   CMOS_OR_LVDS_N = 0,
+  parameter   CMOS_OR_LVDS_N = 1,
   parameter   ADC_INIT_DELAY = 0,
   parameter   ADC_DATAPATH_DISABLE = 0,
   parameter   ADC_USERPORTS_DISABLE = 0,

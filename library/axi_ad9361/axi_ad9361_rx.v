@@ -45,7 +45,7 @@ module axi_ad9361_rx #(
   parameter   SPEED_GRADE = 0,
   parameter   DEV_PACKAGE = 0,
   parameter   MODE_1R1T = 0,
-  parameter   CMOS_OR_LVDS_N = 0,
+  parameter   CMOS_OR_LVDS_N = 1,
   parameter   PPS_RECEIVER_ENABLE = 0,
   parameter   INIT_DELAY = 0,
   parameter   USERPORTS_DISABLE = 0,

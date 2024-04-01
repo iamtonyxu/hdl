@@ -46,7 +46,7 @@ module axi_ad9361_tx #(
   parameter   DEV_PACKAGE = 0,
   parameter   MODE_1R1T = 0,
   parameter   CLK_EDGE_SEL = 0,
-  parameter   CMOS_OR_LVDS_N = 0,
+  parameter   CMOS_OR_LVDS_N = 1,
   parameter   PPS_RECEIVER_ENABLE = 0,
   parameter   INIT_DELAY = 0,
   parameter   DAC_DDS_DISABLE = 0,

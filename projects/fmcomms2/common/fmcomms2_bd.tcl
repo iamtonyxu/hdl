@@ -1,19 +1,27 @@
 
 # fmcomms2
 
-create_bd_port -dir I rx_clk_in_p
-create_bd_port -dir I rx_clk_in_n
-create_bd_port -dir I rx_frame_in_p
-create_bd_port -dir I rx_frame_in_n
-create_bd_port -dir I -from 5 -to 0 rx_data_in_p
-create_bd_port -dir I -from 5 -to 0 rx_data_in_n
+#create_bd_port -dir I rx_clk_in_p
+#create_bd_port -dir I rx_clk_in_n
+#create_bd_port -dir I rx_frame_in_p
+#create_bd_port -dir I rx_frame_in_n
+#create_bd_port -dir I -from 5 -to 0 rx_data_in_p
+#create_bd_port -dir I -from 5 -to 0 rx_data_in_n
 
-create_bd_port -dir O tx_clk_out_p
-create_bd_port -dir O tx_clk_out_n
-create_bd_port -dir O tx_frame_out_p
-create_bd_port -dir O tx_frame_out_n
-create_bd_port -dir O -from 5 -to 0 tx_data_out_p
-create_bd_port -dir O -from 5 -to 0 tx_data_out_n
+#create_bd_port -dir O tx_clk_out_p
+#create_bd_port -dir O tx_clk_out_n
+#create_bd_port -dir O tx_frame_out_p
+#create_bd_port -dir O tx_frame_out_n
+#create_bd_port -dir O -from 5 -to 0 tx_data_out_p
+#create_bd_port -dir O -from 5 -to 0 tx_data_out_n
+
+create_bd_port -dir I rx_clk_in
+create_bd_port -dir I rx_frame_in
+create_bd_port -dir I -from 11 -to 0 rx_data_in
+
+create_bd_port -dir O tx_clk_out
+create_bd_port -dir O tx_frame_out
+create_bd_port -dir O -from 11 -to 0 tx_data_out
 
 create_bd_port -dir O enable
 create_bd_port -dir O txnrx
@@ -34,18 +42,26 @@ ad_ip_parameter axi_ad9361 CONFIG.DAC_DDS_TYPE 1
 ad_ip_parameter axi_ad9361 CONFIG.DAC_DDS_CORDIC_DW 14
 ad_connect $sys_iodelay_clk axi_ad9361/delay_clk
 ad_connect axi_ad9361/l_clk axi_ad9361/clk
-ad_connect rx_clk_in_p axi_ad9361/rx_clk_in_p
-ad_connect rx_clk_in_n axi_ad9361/rx_clk_in_n
-ad_connect rx_frame_in_p axi_ad9361/rx_frame_in_p
-ad_connect rx_frame_in_n axi_ad9361/rx_frame_in_n
-ad_connect rx_data_in_p axi_ad9361/rx_data_in_p
-ad_connect rx_data_in_n axi_ad9361/rx_data_in_n
-ad_connect tx_clk_out_p axi_ad9361/tx_clk_out_p
-ad_connect tx_clk_out_n axi_ad9361/tx_clk_out_n
-ad_connect tx_frame_out_p axi_ad9361/tx_frame_out_p
-ad_connect tx_frame_out_n axi_ad9361/tx_frame_out_n
-ad_connect tx_data_out_p axi_ad9361/tx_data_out_p
-ad_connect tx_data_out_n axi_ad9361/tx_data_out_n
+#ad_connect rx_clk_in_p axi_ad9361/rx_clk_in_p
+#ad_connect rx_clk_in_n axi_ad9361/rx_clk_in_n
+#ad_connect rx_frame_in_p axi_ad9361/rx_frame_in_p
+#ad_connect rx_frame_in_n axi_ad9361/rx_frame_in_n
+#ad_connect rx_data_in_p axi_ad9361/rx_data_in_p
+#ad_connect rx_data_in_n axi_ad9361/rx_data_in_n
+#ad_connect tx_clk_out_p axi_ad9361/tx_clk_out_p
+#ad_connect tx_clk_out_n axi_ad9361/tx_clk_out_n
+#ad_connect tx_frame_out_p axi_ad9361/tx_frame_out_p
+#ad_connect tx_frame_out_n axi_ad9361/tx_frame_out_n
+#ad_connect tx_data_out_p axi_ad9361/tx_data_out_p
+#ad_connect tx_data_out_n axi_ad9361/tx_data_out_n
+
+ad_connect rx_clk_in axi_ad9361/rx_clk_in
+ad_connect rx_frame_in axi_ad9361/rx_frame_in
+ad_connect rx_data_in axi_ad9361/rx_data_in
+ad_connect tx_clk_out axi_ad9361/tx_clk_out
+ad_connect tx_frame_out axi_ad9361/tx_frame_out
+ad_connect tx_data_out axi_ad9361/tx_data_out
+
 ad_connect enable axi_ad9361/enable
 ad_connect txnrx axi_ad9361/txnrx
 ad_connect up_enable axi_ad9361/up_enable

@@ -5,7 +5,7 @@ add_instance axi_ad9361 axi_ad9361
 set_instance_parameter_value axi_ad9361 {ID} {0}
 set_instance_parameter_value axi_ad9361 {MODE_1R1T} {0}
 set_instance_parameter_value axi_ad9361 {TDD_DISABLE} {0}
-set_instance_parameter_value axi_ad9361 {CMOS_OR_LVDS_N} {0}
+set_instance_parameter_value axi_ad9361 {CMOS_OR_LVDS_N} {1}
 set_instance_parameter_value axi_ad9361 {ADC_DATAPATH_DISABLE} {0}
 set_instance_parameter_value axi_ad9361 {DAC_DATAPATH_DISABLE} {0}
 set_instance_parameter_value axi_ad9361 {RX_NODPA} {1}
