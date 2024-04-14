@@ -2,6 +2,9 @@ source $ad_hdl_dir/projects/common/zed/zed_system_bd.tcl
 source ../common/fmcomms2_bd.tcl
 source $ad_hdl_dir/projects/scripts/adi_pd.tcl
 
+ad_ip_parameter util_ad9361_divclk CONFIG.SEL_0_DIV 2
+ad_ip_parameter util_ad9361_divclk CONFIG.SEL_1_DIV 1
+
 set mem_init_sys_path [get_env_param ADI_PROJECT_DIR ""]mem_init_sys.txt;
 
 #system ID
