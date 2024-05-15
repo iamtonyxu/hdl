@@ -1,6 +1,8 @@
 source ../../../scripts/adi_env.tcl
 source $ad_hdl_dir/projects/scripts/adi_project_xilinx.tcl
 source $ad_hdl_dir/projects/scripts/adi_board.tcl
+ad_ip_parameter util_ad9361_divclk CONFIG.SEL_0_DIV 2
+ad_ip_parameter util_ad9361_divclk CONFIG.SEL_1_DIV 1
 
 adi_project fmcomms2_zc706
 adi_project_files fmcomms2_zc706 [list \
