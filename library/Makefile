@@ -39,6 +39,7 @@ clean:
 	$(MAKE) -C axi_clock_monitor clean
 	$(MAKE) -C axi_dac_interpolate clean
 	$(MAKE) -C axi_dmac clean
+	$(MAKE) -C axi_dpd_actuator clean
 	$(MAKE) -C axi_fan_control clean
 	$(MAKE) -C axi_fmcadc5_sync clean
 	$(MAKE) -C axi_generic_adc clean
@@ -161,6 +162,7 @@ lib:
 	$(MAKE) -C axi_clock_monitor
 	$(MAKE) -C axi_dac_interpolate
 	$(MAKE) -C axi_dmac
+	$(MAKE) -C axi_dpd_actuator
 	$(MAKE) -C axi_fan_control
 	$(MAKE) -C axi_fmcadc5_sync
 	$(MAKE) -C axi_generic_adc
