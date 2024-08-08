@@ -68,6 +68,8 @@ ad_ip_parameter axi_adrv9009_tx_clkgen CONFIG.CLKIN_PERIOD 4
 ad_ip_parameter axi_adrv9009_tx_clkgen CONFIG.VCO_DIV 1
 ad_ip_parameter axi_adrv9009_tx_clkgen CONFIG.VCO_MUL 4
 ad_ip_parameter axi_adrv9009_tx_clkgen CONFIG.CLK0_DIV 4
+ad_ip_parameter axi_adrv9009_tx_clkgen CONFIG.CLK1_DIV 2
+ad_ip_parameter axi_adrv9009_tx_clkgen CONFIG.ENABLE_CLKOUT1 1
 
 ad_ip_instance axi_adxcvr axi_adrv9009_tx_xcvr
 ad_ip_parameter axi_adrv9009_tx_xcvr CONFIG.NUM_OF_LANES $MAX_TX_NUM_OF_LANES
@@ -244,6 +246,11 @@ if {$TX_NUM_OF_LANES == 4} {
 ad_connect ref_clk axi_adrv9009_tx_clkgen/clk
 ad_xcvrpll $tx_ref_clk util_adrv9009_xcvr/qpll_ref_clk_0
 ad_xcvrpll axi_adrv9009_tx_xcvr/up_pll_rst util_adrv9009_xcvr/up_qpll_rst_0
+
+# Dpd Actuator
+ad_ip_instance axi_dpd_actuator axi_dpd_actuator_0
+ad_connect axi_adrv9009_tx_clkgen/clk_1 axi_dpd_actuator_0/clk
+ad_connect $sys_cpu_resetn axi_dpd_actuator_0/rst_n
 
 # Rx
 if {$RX_NUM_OF_LANES == 2} {
@@ -439,6 +446,7 @@ ad_cpu_interconnect 0x44A50000 axi_adrv9009_rx_os_xcvr
 ad_cpu_interconnect 0x43C20000 axi_adrv9009_rx_os_clkgen
 ad_cpu_interconnect 0x44AB0000 axi_adrv9009_rx_os_jesd
 ad_cpu_interconnect 0x7c440000 axi_adrv9009_rx_os_dma
+ad_cpu_interconnect 0x46000000 axi_dpd_actuator_0
 
 # gt uses hp0, and 100MHz clock for both DRP and AXI4
 

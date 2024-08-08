@@ -37,5 +37,6 @@ LIB_DEPS += util_pack/util_upack2
 LIB_DEPS += xilinx/axi_adxcvr
 LIB_DEPS += xilinx/axi_dacfifo
 LIB_DEPS += xilinx/util_adxcvr
+LIB_DEPS += axi_dpd_actuator
 
 include ../../scripts/project-xilinx.mk
