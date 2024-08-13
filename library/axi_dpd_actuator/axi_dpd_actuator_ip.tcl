@@ -12,6 +12,8 @@ adi_ip_files axi_dpd_actuator [list \
   "dpd_lut.v" \
   "dpd_lut_row.v" \
   "dpd_actuator.v" \
+  "cpower_fixed.v" \
+  "cmag_fixed.v" \
   "axi_dpd_actuator.v" ]
 
 adi_ip_properties axi_dpd_actuator
