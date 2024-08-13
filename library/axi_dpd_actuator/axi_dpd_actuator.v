@@ -16,15 +16,22 @@ module axi_dpd_actuator #(
     input                           clk,
     input                           rst_n,
 
-    input                           tu_enable,
-    input   [LUT_DATA_WIDTH-1:0]    tu,
-    input   [LUT_ADDR_WIDTH-1:0]    mag, // mag = abs(tu)
-    output  [LUT_DATA_WIDTH-1:0]    tx, // postDPD
-    output                          tx_valid,
+    // signal from tx_fir_interpolator, two samples per channel
+    input   [31:0]                  data_in_0,
+    input                           data_in_enable_0,
+    input   [31:0]                  data_in_1,
+    input                           data_in_enable_1,
+
+    // signal to tx_adrv9009_tpl_core, two samples per channel
+    output  [31:0]                  data_out_0,
+    output                          data_out_valid_0,
+    output  [31:0]                  data_out_1,
+    output                          data_out_valid_1,
 
     //axis interface
     input                           s_axi_aclk,
     input                           s_axi_aresetn,
+
     input                           s_axi_awvalid,
     input   [AXI_ADDR_WIDTH-1:0]    s_axi_awaddr,
     input   [2:0]                   s_axi_awprot,
@@ -36,6 +43,7 @@ module axi_dpd_actuator #(
     output                          s_axi_bvalid,
     output  [1:0]                   s_axi_bresp,
     input                           s_axi_bready,
+
     input                           s_axi_arvalid,
     input   [AXI_ADDR_WIDTH-1:0]    s_axi_araddr,
     input   [2:0]                   s_axi_arprot,
@@ -79,6 +87,19 @@ module axi_dpd_actuator #(
     wire                        up_wreq_s;
     wire  [UP_ADDR_WIDTH-1:0]   up_waddr_s;
     wire  [UP_DATA_WIDTH-1:0]   up_wdata_s;
+
+    //interface to adrv9009_zc706 project
+    reg                         clkdiv2;
+    reg                         tu_enable;
+    reg [LUT_DATA_WIDTH-1:0]    tu;
+    wire [LUT_DATA_WIDTH-1:0]   tu_aligned;
+    wire[LUT_DATA_WIDTH-1:0]    tx;
+    wire                        tx_valid;
+    wire[LUT_ADDR_WIDTH-1:0]    mag; // mag = abs(tu)
+
+    reg [LUT_DATA_WIDTH-1:0]    tx_i;
+    reg [LUT_DATA_WIDTH-1:0]    tx_q;
+    reg                         data_out_valid;
 
     assign up_clk = s_axi_aclk;
     assign up_rstn = s_axi_aresetn;
@@ -351,6 +372,72 @@ module axi_dpd_actuator #(
     assign config_addr = (config_web==1'b1) ? config_addr_wreq : config_addr_rreq;
     assign bypass = up_bypass[0];
 
+    //interface to tx_fir_interpolator
+    //clkdiv2, tu_enable
+    always@(posedge clk or negedge rst_n)
+        if(~rst_n) begin
+            clkdiv2 <= 0;
+            tu_enable <= 0;
+        end
+        else begin
+            clkdiv2 <= ~clkdiv2;
+            tu_enable <= data_in_enable_0 & data_in_enable_1;
+        end
+
+    //tu
+    always@(posedge clk or negedge rst_n)
+        if(~rst_n) begin
+            tu <= 0;
+        end
+        else begin
+            if(~clkdiv2) begin
+                tu <= {data_in_0[LUT_DATA_WIDTH-1:LUT_DATA_WIDTH/2], data_in_1[LUT_DATA_WIDTH-1:LUT_DATA_WIDTH/2]};
+            end
+            else begin
+                tu <= {data_in_0[LUT_DATA_WIDTH/2-1:0], data_in_1[LUT_DATA_WIDTH/2-1:0]};
+            end
+        end
+
+    //interface to tx_adrv9009_tpl_core
+    assign data_out_valid_0 = data_out_valid;
+    assign data_out_valid_1 = data_out_valid;
+    assign data_out_0 = tx_i;
+    assign data_out_1 = tx_q;
+
+    //tx_i, tx_q
+    always@(posedge clk or negedge rst_n)
+        if(~rst_n) begin
+            tx_i <= 0;
+            tx_q <= 0;
+            data_out_valid <= 0;
+        end
+        else begin
+            tx_i <= {tx_i[LUT_DATA_WIDTH/2-1:0], tx[LUT_DATA_WIDTH-1:LUT_DATA_WIDTH/2]};
+            tx_q <= {tx_q[LUT_DATA_WIDTH/2-1:0], tx[LUT_DATA_WIDTH/2-1:0]};
+            data_out_valid <= tx_valid;
+        end
+
+    cmag_fixed#(
+        .LUT_DATA_WIDTH(LUT_DATA_WIDTH),
+        .LUT_ADDR_WIDTH(LUT_ADDR_WIDTH)
+    )
+    i_cmag(
+        .clk(clk),
+        .rst_n(rst_n),
+        .tu(tu),
+        .mag(mag)
+    );
+
+    delay #(
+        .TAPS(16), // latency of module cmag_fixed
+        .DWIDTH(LUT_DATA_WIDTH)
+    )tu_delay
+    (
+        .clk(clk),
+        .din(tu),
+        .dout(tu_aligned)
+    );
+
     dpd_actuator #(
         .ID_MASK(ID_MASK),
         .DATA_WIDTH(LUT_DATA_WIDTH),
@@ -362,13 +449,13 @@ module axi_dpd_actuator #(
 
         .tu_enable(tu_enable),
         .bypass(bypass),
-        .tu(tu),
+        .tu(tu_aligned),
         .mag(mag), // mag = abs(tu)
         .tx(tx), // postDPD
         .tx_valid(tx_valid),
 
         // configuration port
-        //.config_clk(up_clk),
+        .config_clk(up_clk),
         .config_addr(config_addr),
         .config_din(config_din),
         .config_dout(config_dout),
