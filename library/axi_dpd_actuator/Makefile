@@ -13,6 +13,8 @@ GENERIC_DEPS += delay.v
 GENERIC_DEPS += dpd_lut.v
 GENERIC_DEPS += dpd_lut_row.v
 GENERIC_DEPS += dpd_actuator.v
+GENERIC_DEPS += cpower_fixed.v
+GENERIC_DEPS += cmag_fixed.v
 GENERIC_DEPS += axi_dpd_actuator.v
 
 XILINX_DEPS += axi_dpd_actuator_ip.tcl

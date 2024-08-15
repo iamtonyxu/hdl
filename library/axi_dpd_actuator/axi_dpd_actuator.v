@@ -423,7 +423,7 @@ module axi_dpd_actuator #(
     )
     i_cmag(
         .clk(clk),
-        .rst_n(rst_n),
+        .rst_n(1'b1),
         .tu(tu),
         .mag(mag)
     );
@@ -445,7 +445,7 @@ module axi_dpd_actuator #(
     )
     i_dpd_actuator(
         .clk(clk),
-        .rst_n(rst_n),
+        .rst_n(1'b1),
 
         .tu_enable(tu_enable),
         .bypass(bypass),
