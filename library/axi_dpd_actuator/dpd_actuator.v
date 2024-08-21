@@ -8,7 +8,7 @@
 module dpd_actuator #(
     parameter ID_MASK = 64'hFFFF_FFFF_FFFF_FFFF,
     parameter DATA_WIDTH = 32,
-    parameter ADDR_WIDTH = 10
+    parameter ADDR_WIDTH = 9
 )
 (
     input clk,

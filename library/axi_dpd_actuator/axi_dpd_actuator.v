@@ -8,9 +8,9 @@
 module axi_dpd_actuator #(
     parameter ID_MASK = 64'hFFFF_FFFF_FFFF_FFFF, //TODO: IP user can read ID_MASK
     parameter LUT_DATA_WIDTH = 32,
-    parameter LUT_ADDR_WIDTH = 10,
+    parameter LUT_ADDR_WIDTH = 9,
     parameter AXI_DATA_WIDTH = 32,
-    parameter AXI_ADDR_WIDTH = 18 //AXI_ADDR_WIDTH=LUT_ADDR_WIDTH+6+2
+    parameter AXI_ADDR_WIDTH = 16 //AXI_ADDR_WIDTH=LUT_ADDR_WIDTH+6+1
 )
 (
     input                           clk,
@@ -60,7 +60,7 @@ module axi_dpd_actuator #(
 
     localparam  [31:0]  IP_VERSION  = {16'h0001,    /* MAJOR */
                                         8'h01,      /* MINOR */
-                                        8'h61};     /* PATCH */
+                                        8'h81};     /* PATCH */
 
     // configuration port
     reg [LUT_ADDR_WIDTH-1:0] config_addr_wreq;
@@ -157,10 +157,10 @@ module axi_dpd_actuator #(
                     config_din <= up_wdata_s;
                 end
                 else begin
-                    if(up_waddr_s[UP_ADDR_WIDTH-2:0] == 1) begin
+                    if(up_waddr_s[UP_ADDR_WIDTH-2:0] == 3) begin
                         up_scratch <= up_wdata_s;
                     end
-                    if(up_waddr_s[UP_ADDR_WIDTH-2:0] == 2) begin
+                    if(up_waddr_s[UP_ADDR_WIDTH-2:0] == 4) begin
                         up_bypass <= up_wdata_s;
                     end
                 end
@@ -370,7 +370,7 @@ module axi_dpd_actuator #(
 
     assign config_addr_rreq = up_raddr_s[LUT_ADDR_WIDTH-1:0];
     assign config_addr = (config_web==1'b1) ? config_addr_wreq : config_addr_rreq;
-    assign bypass = up_bypass[0];
+    assign bypass = ~up_bypass[0];
 
     //interface to tx_fir_interpolator
     //clkdiv2, tu_enable
