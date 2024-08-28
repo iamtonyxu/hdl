@@ -13,3 +13,5 @@ sysid_gen_sys_init_file
 
 ad_ip_parameter axi_ad9361 CONFIG.ADC_INIT_DELAY 20
 
+ad_ip_parameter util_ad9361_divclk CONFIG.SEL_0_DIV 2
+ad_ip_parameter util_ad9361_divclk CONFIG.SEL_1_DIV 1
