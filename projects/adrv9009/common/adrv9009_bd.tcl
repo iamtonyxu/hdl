@@ -247,11 +247,17 @@ ad_connect ref_clk axi_adrv9009_tx_clkgen/clk
 ad_xcvrpll $tx_ref_clk util_adrv9009_xcvr/qpll_ref_clk_0
 ad_xcvrpll axi_adrv9009_tx_xcvr/up_pll_rst util_adrv9009_xcvr/up_qpll_rst_0
 
+# util_luts_addr_gen for DPD Actuator
+ad_ip_instance util_luts_addr_gen util_luts_addr_gen_0
+ad_connect axi_adrv9009_tx_clkgen/clk_0 util_luts_addr_gen_0/data_clk
+ad_connect $sys_cpu_resetn util_luts_addr_gen_0/data_rstn
+ad_connect util_luts_addr_gen_0/data_in_enable VCC
+
 # Dpd Actuator
 ad_ip_instance axi_dpd_actuator axi_dpd_actuator_0
-ad_connect axi_adrv9009_tx_clkgen/clk_1 axi_dpd_actuator_0/data_clk
+ad_connect axi_adrv9009_tx_clkgen/clk_0 axi_dpd_actuator_0/data_clk
 ad_connect $sys_cpu_resetn axi_dpd_actuator_0/data_rstn
-ad_connect axi_dpd_actuator_0/data_in_enable_0 VCC
+ad_connect axi_dpd_actuator_0/data_in_enable_0 util_luts_addr_gen_0/data_out_valid
 
 # Rx
 if {$RX_NUM_OF_LANES == 2} {
@@ -349,8 +355,13 @@ for {set i 0} {$i < $TX_NUM_OF_CONVERTERS} {incr i} {
 
 #  ad_connect  tx_fir_interpolator/data_out_${i}  tx_adrv9009_tpl_core/dac_data_$i
 }
-ad_connect  tx_fir_interpolator/data_out_0  axi_dpd_actuator_0/data_in_0
-ad_connect  tx_fir_interpolator/data_out_1  axi_dpd_actuator_0/data_in_1
+ad_connect  tx_fir_interpolator/data_out_0  util_luts_addr_gen_0/data_in_0
+ad_connect  tx_fir_interpolator/data_out_1  util_luts_addr_gen_0/data_in_1
+
+ad_connect  util_luts_addr_gen_0/data_out_0  axi_dpd_actuator_0/data_in_0
+ad_connect  util_luts_addr_gen_0/data_out_1  axi_dpd_actuator_0/data_in_1
+ad_connect  util_luts_addr_gen_0/data_out_2  axi_dpd_actuator_0/data_in_2
+
 ad_connect  axi_dpd_actuator_0/data_out_0   tx_adrv9009_tpl_core/dac_data_0
 ad_connect  axi_dpd_actuator_0/data_out_1   tx_adrv9009_tpl_core/dac_data_1
 ad_connect  tx_fir_interpolator/data_out_2  tx_adrv9009_tpl_core/dac_data_2
