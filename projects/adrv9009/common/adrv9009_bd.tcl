@@ -249,10 +249,9 @@ ad_xcvrpll axi_adrv9009_tx_xcvr/up_pll_rst util_adrv9009_xcvr/up_qpll_rst_0
 
 # Dpd Actuator
 ad_ip_instance axi_dpd_actuator axi_dpd_actuator_0
-ad_connect axi_adrv9009_tx_clkgen/clk_1 axi_dpd_actuator_0/clk
-ad_connect $sys_cpu_resetn axi_dpd_actuator_0/rst_n
+ad_connect axi_adrv9009_tx_clkgen/clk_1 axi_dpd_actuator_0/data_clk
+ad_connect $sys_cpu_resetn axi_dpd_actuator_0/data_rstn
 ad_connect axi_dpd_actuator_0/data_in_enable_0 VCC
-ad_connect axi_dpd_actuator_0/data_in_enable_1 VCC
 
 # Rx
 if {$RX_NUM_OF_LANES == 2} {
