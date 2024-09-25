@@ -10,7 +10,7 @@ set_property -dict [list \
   CONFIG.Data_Format {UnsignedFraction} \
   CONFIG.Functional_Selection {Square_Root} \
   CONFIG.Input_Width {33} \
-  CONFIG.Output_Width {10} \
+  CONFIG.Output_Width {11} \
 ] [get_ips cordic_sqrt]
 
 generate_target {all} [get_files util_luts_addr_gen.srcs/sources_1/ip/cordic_sqrt/cordic_sqrt.xci]

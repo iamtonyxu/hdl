@@ -22,8 +22,19 @@ module util_luts_addr_gen(
 );
 
 localparam CPOWER_DELAY = 5;
-localparam CORDIC_DELAY = 10;
-localparam MAG_DELAY = 1 + CPOWER_DELAY + CORDIC_DELAY;
+localparam CORDIC_DELAY = 11;
+localparam MAG_DELAY = CPOWER_DELAY + CORDIC_DELAY;
+/*
+set cordic_sqrt [create_ip -name cordic -vendor xilinx.com -library ip -version 6.0 -module_name cordic_sqrt]
+set_property -dict [list \
+  CONFIG.Coarse_Rotation {false} \
+  CONFIG.Component_Name {cordic_sqrt} \
+  CONFIG.Data_Format {UnsignedFraction} \
+  CONFIG.Functional_Selection {Square_Root} \
+  CONFIG.Input_Width {33} \
+  CONFIG.Output_Width {11} \
+] [get_ips cordic_sqrt]
+*/
 
 reg signed [15:0] signal_odd_i, signal_odd_q;
 reg signed [15:0] signal_even_i, signal_even_q;
@@ -85,7 +96,7 @@ assign s_axis_tdata2 = signal_even_p;
 
 assign data_out_2 = {m_axis_tdata1, m_axis_tdata2};
 
-// delay of cordic_sqrt = 7
+// delay of cordic_sqrt = 11? depends on input/output width
 cordic_sqrt sqrt1
 (
     .aclk(data_clk),
