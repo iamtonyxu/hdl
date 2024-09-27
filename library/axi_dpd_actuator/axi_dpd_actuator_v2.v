@@ -171,9 +171,9 @@ module axi_dpd_actuator_v2 #(
         end
         else begin
             if(wfifo_rd) begin
-                dpd_enc = wfifo_rdata[29] | wfifo_rdata[13];
-                dpd_wec = wfifo_rdata[12];
-                dpd_dinc = wfifo_rdata[63:32];
+                dpd_enc <= wfifo_rdata[29] | wfifo_rdata[13];
+                dpd_wec <= wfifo_rdata[12];
+                dpd_dinc <= wfifo_rdata[63:32];
 
                 if(wfifo_rdata[12])
                     dpd_addrc <= wfifo_rdata[9:0];
