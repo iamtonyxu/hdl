@@ -5,7 +5,7 @@ source $ad_hdl_dir/library/scripts/adi_ip_xilinx.tcl
 
 adi_ip_create axi_dpd_actuator
 adi_ip_files axi_dpd_actuator [list \
-  "$ad_hdl_dir/library/common/up_axi.v" \
+  "up_axi.v" \
   "afifo.v" \
   "cadder.v" \
   "cmult_fixed_v2.v" \

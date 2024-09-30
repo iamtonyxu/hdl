@@ -6,7 +6,7 @@
 
 LIBRARY_NAME := axi_dpd_actuator
 
-GENERIC_DEPS += ../common/up_axi.v
+GENERIC_DEPS += up_axi.v
 GENERIC_DEPS += afifo.v
 GENERIC_DEPS += cadder.v
 GENERIC_DEPS += cmult_fixed_v2.v
