@@ -400,13 +400,13 @@ module axi_dpd_actuator_v2 #(
 
     // data_out_0 = {tx_i[2n+1],tx_i[2n]}
     // data_out_1 = {tx_q[2n+1],tx_q[2n]}
-    assign data_out_0 = dpd_out_sel[0] ? {dpd_tx[47:32], dpd_tx[15:0]} :
+    assign data_out_0 = dpd_out_sel[0] ? {dpd_tx[63:48], dpd_tx[31:16]} :
                         dpd_out_sel[1] ? data_in_0     :
                         dpd_out_sel[2] ? 32'h0000_0000 :
                         dpd_out_sel[3] ? 32'h1234_5678 :
                         data_in_0;
 
-    assign data_out_1 = dpd_out_sel[0] ? {dpd_tx[63:48], dpd_tx[31:16]} :
+    assign data_out_1 = dpd_out_sel[0] ? {dpd_tx[47:32], dpd_tx[15:0]} :
                         dpd_out_sel[1] ? data_in_1     :
                         dpd_out_sel[2] ? 32'h0000_0000 :
                         dpd_out_sel[3] ? 32'h9abc_def0 :

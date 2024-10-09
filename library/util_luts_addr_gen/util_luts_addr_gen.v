@@ -23,7 +23,7 @@ module util_luts_addr_gen(
 
 localparam CPOWER_DELAY = 5;
 localparam CORDIC_DELAY = 11;
-localparam MAG_DELAY = CPOWER_DELAY + CORDIC_DELAY;
+localparam MAG_DELAY = 1 + CPOWER_DELAY + CORDIC_DELAY;
 /*
 set cordic_sqrt [create_ip -name cordic -vendor xilinx.com -library ip -version 6.0 -module_name cordic_sqrt]
 set_property -dict [list \
@@ -55,8 +55,8 @@ always@(posedge data_clk or negedge data_rstn)
     else begin
         if(data_in_enable) begin
             signal_odd_i <= data_in_0[31:16];
-            signal_odd_q <= data_in_0[15:0];
-            signal_even_i <= data_in_1[31:16];
+            signal_odd_q <= data_in_1[31:16];
+            signal_even_i <= data_in_0[15:0];
             signal_even_q <= data_in_1[15:0];
         end
         else begin
