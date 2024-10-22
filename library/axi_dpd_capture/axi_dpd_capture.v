@@ -7,16 +7,15 @@ module axi_dpd_capture #(
     parameter CAP_DEPTH = 12
 )
 (
-    // signal from tx_fir_interpolator, two samples per channel
+    // signal from pre or post DPD, two samples per channel
     // data_in_0 = {tu_i[2n+1],tu_i[2n]}
     // data_in_1 = {tu_q[2n+1],tu_q[2n]}
-    // data_in_enable_0/1/2 share one
     input                           data_clk,
     input                           data_rstn,
     input   [31:0]                  data_in_0,
     input   [31:0]                  data_in_1,
 
-    // capture trigger and done signal
+    // capture trigger and done signal, according to s_axi_aclk
     input                           cap_trigger,
     output                          cap_done,
 
@@ -55,6 +54,7 @@ module axi_dpd_capture #(
     // cap_status = 2, capture done after the last trigger
     reg [1:0]          cap_status;
     reg [15:0]         cap_count;
+    reg                cap_trigger_d, cap_trigger_dd;
 
     // cap_mem
     // ram[0]: {data_in_0[15:0], data_in_1[15:0]}
@@ -63,7 +63,7 @@ module axi_dpd_capture #(
     // ram[2n]: {data_in_0[15:0], data_in_1[15:0]}
     // ram[2n+1]: {data_in_0[31:16], data_in_1[31:16]}
     (* rom_style="{distributed | block}" *)
-    reg  [63:0]                 ram[2**(CAP_DEPTH-1)-1:0];
+    reg  [63:0]                 ram[0:2**(CAP_DEPTH-1)-1];
     wire                        wea;
     wire [CAP_DEPTH-1:0]        waddr;
     wire [63:0]                 wdata;
@@ -84,12 +84,23 @@ module axi_dpd_capture #(
     reg                         up_rack_s;
     reg                         up_rreq_s_d1;
 
+    // cap_trigger_hold
+    always@(posedge data_clk or negedge data_rstn)
+        if(~data_rstn) begin
+            cap_trigger_d <= 0;
+            cap_trigger_dd <= 0;
+        end
+        else begin
+            cap_trigger_d <= cap_trigger;
+            cap_trigger_dd <= cap_trigger_d;
+        end
+
     // cap_status
     always@(posedge data_clk or negedge data_rstn)
         if(~data_rstn)
             cap_status <= 2'd0;
         else begin
-            if(cap_trigger)
+            if(cap_trigger_dd)
                 cap_status <= 2'd1;
             else if(cap_count == 2**(CAP_DEPTH-1) - 1)
                 cap_status <= 2'd2;

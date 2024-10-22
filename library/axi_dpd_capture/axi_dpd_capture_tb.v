@@ -40,6 +40,9 @@ module axi_dpd_capture_tb;
     wire  [31:0]                  s_axi_rdata;
     reg                           s_axi_rready;
 
+    reg [31:0] cap_buffer[0:2**CAP_DEPTH-1];
+    integer i;
+
     // axi_write
     task axi_write;
         // user inteface
@@ -125,14 +128,34 @@ module axi_dpd_capture_tb;
 
     // sim process
     initial begin
-        data_in_0 = 32'hdead;
-        data_in_1 = 32'h1234;
         cap_trigger = 0;
         #1000;
+
+        // trigger capture
         cap_trigger = 1;
         @(posedge data_clk);
         cap_trigger = 0;
+
+        // wait capture done
+        wait(cap_done == 1);
+        #100;
+
+        // read capture data
+        for(i = 0; i < 2**CAP_DEPTH; i=i+1) begin
+            axi_read(i*4, cap_buffer[i]);
+        end
     end
+
+    // data_in_0, data_in_1
+    always@(posedge data_clk or negedge data_rstn)
+        if(~data_rstn) begin
+            data_in_0 <= 32'h1111_1111;
+            data_in_1 <= 32'h2222_2222;
+        end
+        else begin
+            data_in_0 <= data_in_0 + 1;
+            data_in_1 <= data_in_1 + 1;
+        end
 
     axi_dpd_capture #(
         .CAP_DEPTH(CAP_DEPTH) 
