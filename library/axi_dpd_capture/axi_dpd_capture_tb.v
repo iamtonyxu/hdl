@@ -129,12 +129,37 @@ module axi_dpd_capture_tb;
     // sim process
     initial begin
         cap_trigger = 0;
+
+        // reset cap_buffer
+        for(i = 0; i < 2**CAP_DEPTH; i=i+1) begin
+            cap_buffer[i] = 0;
+        end
         #1000;
 
-        // trigger capture
-        cap_trigger = 1;
+        axi_write(16'h8000, 1); // select sw trigger
+
+        // gpio trigger capture
         @(posedge data_clk);
         cap_trigger = 0;
+        @(posedge data_clk);
+        cap_trigger = 1;
+        @(posedge data_clk);
+
+        #1000;
+        axi_write(16'h8000, 3); // select sw and trigger a capture
+
+        // wait capture done
+        wait(cap_done == 1);
+        #100;
+        axi_write(16'h8000, 4); // clear cap_status and set gpio trigger mode
+        #1000;
+
+        // gpio trigger capture
+        @(posedge data_clk);
+        cap_trigger = 0;
+        @(posedge data_clk);
+        cap_trigger = 1;
+        @(posedge data_clk);
 
         // wait capture done
         wait(cap_done == 1);
