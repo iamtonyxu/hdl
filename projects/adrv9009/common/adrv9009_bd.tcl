@@ -265,7 +265,7 @@ ad_connect axi_adrv9009_tx_clkgen/clk_0 axi_dpd_capture_0/data_clk
 ad_connect $sys_cpu_resetn axi_dpd_capture_0/data_rstn
 ad_connect util_luts_addr_gen_0/data_out_0 axi_dpd_capture_0/data_in_0
 ad_connect util_luts_addr_gen_0/data_out_1 axi_dpd_capture_0/data_in_1
-#ad_connect axi_adrv9009_rx_dma/irq axi_dpd_capture_0/cap_trigger
+
 ad_ip_instance util_vector_logic logic_or1 [list \
 C_OPERATION {or} \
 C_SIZE 1]
@@ -279,7 +279,6 @@ ad_connect axi_adrv9009_tx_clkgen/clk_0 axi_dpd_capture_1/data_clk
 ad_connect $sys_cpu_resetn axi_dpd_capture_1/data_rstn
 ad_connect axi_dpd_actuator_0/data_out_0 axi_dpd_capture_1/data_in_0
 ad_connect axi_dpd_actuator_0/data_out_1 axi_dpd_capture_1/data_in_1
-#ad_connect axi_adrv9009_rx_dma/irq axi_dpd_capture_1/cap_trigger
 ad_connect  logic_or1/Res  axi_dpd_capture_1/cap_trigger
 
 # Rx

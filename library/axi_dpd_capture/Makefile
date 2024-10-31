@@ -8,6 +8,7 @@ LIBRARY_NAME := axi_dpd_capture
 
 GENERIC_DEPS += ../common/up_axi.v
 GENERIC_DEPS += axi_dpd_capture.v
+GENERIC_DEPS += afifo.v
 
 XILINX_DEPS += axi_dpd_capture_ip.tcl
 

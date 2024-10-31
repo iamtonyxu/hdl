@@ -6,7 +6,8 @@ source $ad_hdl_dir/library/scripts/adi_ip_xilinx.tcl
 adi_ip_create axi_dpd_capture
 adi_ip_files axi_dpd_capture [list \
   "$ad_hdl_dir/library/common/up_axi.v" \
-  "axi_dpd_capture.v" ]
+  "axi_dpd_capture.v" \
+  "afifo.v"]
 
 adi_ip_properties axi_dpd_capture
 adi_ip_bd axi_dpd_capture "bd/bd.tcl"

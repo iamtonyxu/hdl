@@ -54,8 +54,10 @@ module axi_dpd_capture #(
     // cap_status = 2, capture done after the last trigger
     reg [1:0]          cap_status;
     reg [15:0]         cap_count;
-    reg                cap_trigger_d, cap_trigger_dd, cap_trigger_ddd;
-    reg                cap_clear_d, cap_clear_dd;
+    wire               cap_trigger_d;
+
+    // afifo
+    wire tfifo_wr, tfifo_rd, tfifo_wfull, tfifo_rempty;
 
     // cap_mem
     // ram[0]: {data_in_0[15:0], data_in_1[15:0]}
@@ -66,9 +68,9 @@ module axi_dpd_capture #(
     (* rom_style="{distributed | block}" *)
     reg  [63:0]                 ram[0:2**(CAP_DEPTH-1)-1];
     wire                        wea;
-    wire [CAP_DEPTH-1:0]        waddr;
+    wire [CAP_DEPTH-2:0]        waddr;
     wire [63:0]                 wdata;
-    wire [CAP_DEPTH-1:0]        raddr;
+    wire [CAP_DEPTH-2:0]        raddr;
     wire [63:0]                 rdata;
 
 
@@ -87,55 +89,45 @@ module axi_dpd_capture #(
 
     // internal registers
     // cap_control[0]: trigger mode, 1: internal trigger, 0: gpio trigger (rising edge)
-    // cap_control[1]: internal trigger, rising edge is valid
-    // cap_control[2]: reset cap_status for internal and gpio trigger, 1 write self clear
+    // cap_control[1]: internal trigger, rising edge is valid, 1 write self clear
+    // cap_control[2]: reset cap_status, 1 write self clear, reserved
     // cap_control[31:8]: delay capture after triggering, reserved
     reg   [31:0]                cap_control;
 
     // mem          addr_start  addr_end    width   default
     // cap_ram      14'h0000    14'h1fff    32      0
     // cap_control  14'h2000    14'h2000    32      0
-    // cap_status   14'h2001    14'h2001    2       0
 
-    // cap_trigger_hold
-    always@(posedge data_clk or negedge data_rstn)
-        if(~data_rstn) begin
-            cap_trigger_d <= 0;
-            cap_trigger_dd <= 0;
-        end
-        else begin
-            if(~cap_control[0]) begin
-                cap_trigger_d <= cap_trigger;
-            end
-            else begin
-                cap_trigger_d <= cap_control[1];
-            end
-            cap_trigger_dd <= cap_trigger_d;
-            cap_trigger_ddd <= cap_trigger_d & (~cap_trigger_dd);
-        end
+    afifo #(
+    .DSIZE(8),
+    .ASIZE(8)
+    )
+    tfifo(
+        .i_wclk(s_axi_aclk),
+        .i_wrst_n(s_axi_aresetn),
+        .i_wr(tfifo_wr),
+        .i_wdata(8'h5a),
+        .o_wfull(tfifo_wfull),
+		.i_rclk(data_clk),
+        .i_rrst_n(data_rstn),
+        .i_rd(tfifo_rd),
+        .o_rdata(),
+        .o_rempty(tfifo_rempty)
+    );
 
-    // cap_clear
-    always@(posedge data_clk or negedge data_rstn)
-        if(~data_rstn) begin
-            cap_clear_d <= 0;
-            cap_clear_dd <= 0;
-        end
-        else begin
-            cap_clear_d <= cap_control[2];
-            cap_clear_dd <= cap_clear_d;
-        end
+    assign tfifo_wr = cap_control[0] ? cap_control[1] : cap_trigger;
+    assign tfifo_rd = ~tfifo_rempty;
+    assign cap_trigger_d = ~tfifo_rempty;
 
     // cap_status
     always@(posedge data_clk or negedge data_rstn)
         if(~data_rstn)
             cap_status <= 2'd0;
         else begin
-            if(cap_trigger_ddd)
+            if(cap_trigger_d)
                 cap_status <= 2'd1;
             else if(cap_count == 2**(CAP_DEPTH-1) - 1)
                 cap_status <= 2'd2;
-            else if(cap_clear_dd)
-                cap_status <= 2'd0;
         end
 
     // cap_done
@@ -152,7 +144,7 @@ module axi_dpd_capture #(
                 cap_count <= 0;
         end
     
-    assign waddr = cap_count[CAP_DEPTH-1:0];
+    assign waddr = cap_count[CAP_DEPTH-2:0];
     assign wea = cap_status == (2'd1);
     assign wdata = {data_in_0, data_in_1};
 
@@ -173,7 +165,7 @@ module axi_dpd_capture #(
 
     // ram read
     assign rdata = ram[raddr];
-    assign raddr = up_raddr_s[CAP_DEPTH:1];
+    assign raddr = up_raddr_s[CAP_DEPTH-1:1];
 
     // up_axi
     assign up_clk = s_axi_aclk;
@@ -230,9 +222,11 @@ module axi_dpd_capture #(
             end
         end
         else begin
+            // internal trigger, rising edge is valid, 1 write self-clear
             if(cap_control[1]) begin
                 cap_control[1] <= 1'b0;
             end
+            // reset cap_status, 1 write self-clear
             if(cap_control[2]) begin
                 cap_control[2] <= 1'b0;
             end
@@ -255,20 +249,12 @@ module axi_dpd_capture #(
         else begin
             if (up_rreq_s_d1) begin
                 up_rack_s <= 1;
-                if(up_raddr_s[UP_ADDR_WIDTH-1]==1'b0) begin
-                    if(up_raddr_s[0])
-                        up_rdata_s <= rdata[31:0];
-                    else
-                        up_rdata_s <= rdata[63:32];
-                end
-                else begin
-                    if(up_raddr_s[7:0]==0)
-                        up_rdata_s <= cap_control;
-                    else if(up_raddr_s[7:0]==1)
-                        up_rdata_s <= {30'h0, cap_status};
-                    else
-                        up_rdata_s <= 0;
-                end
+
+                if(up_raddr_s[0])
+                    up_rdata_s <= rdata[31:0];
+                else
+                    up_rdata_s <= rdata[63:32];
+
             end
             else begin
                 up_rack_s <= 0;

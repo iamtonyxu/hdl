@@ -2,9 +2,9 @@
 
 module axi_dpd_capture_tb;
 
-    localparam DCLK_PERIOD = 4; // dpd_actuator clock = 122.88/245.76 MHz
-    localparam ACLK_PERIOD = 10; //s_axi_aclk = 100 MHz
-    localparam CAP_DEPTH = 12;
+    localparam DCLK_PERIOD = 10; // dpd_actuator clock = 122.88/245.76 MHz
+    localparam ACLK_PERIOD = 4; //s_axi_aclk = 100 MHz
+    localparam CAP_DEPTH = 14;
 
     // signal in/out
     reg                           data_clk;
@@ -139,11 +139,10 @@ module axi_dpd_capture_tb;
         axi_write(16'h8000, 1); // select sw trigger
 
         // gpio trigger capture
-        @(posedge data_clk);
-        cap_trigger = 0;
-        @(posedge data_clk);
+        @(posedge s_axi_aclk);
         cap_trigger = 1;
-        @(posedge data_clk);
+        @(posedge s_axi_aclk);
+        cap_trigger = 0;
 
         #1000;
         axi_write(16'h8000, 3); // select sw and trigger a capture
@@ -155,15 +154,23 @@ module axi_dpd_capture_tb;
         #1000;
 
         // gpio trigger capture
-        @(posedge data_clk);
-        cap_trigger = 0;
-        @(posedge data_clk);
+        @(posedge s_axi_aclk);
         cap_trigger = 1;
-        @(posedge data_clk);
+        @(posedge s_axi_aclk);
+        cap_trigger = 0;
+        
+        for(i = 0; i < 5; i = i + 1) begin
+            #100;
+            // gpio trigger capture, should be ignored!
+            @(posedge s_axi_aclk);
+            cap_trigger = 1;
+            @(posedge s_axi_aclk);
+            cap_trigger = 0;
+        end
 
         // wait capture done
         wait(cap_done == 1);
-        #100;
+        #1000;
 
         // read capture data
         for(i = 0; i < 2**CAP_DEPTH; i=i+1) begin
