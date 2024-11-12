@@ -94,7 +94,7 @@ power2(
 assign s_axis_tdata1 = signal_odd_p;
 assign s_axis_tdata2 = signal_even_p;
 
-assign data_out_2 = {m_axis_tdata1, m_axis_tdata2};
+assign data_out_2 = {m_axis_tdata1[14:0], 1'b0, m_axis_tdata2[14:0], 1'b0};
 
 // delay of cordic_sqrt = 11? depends on input/output width
 cordic_sqrt sqrt1
