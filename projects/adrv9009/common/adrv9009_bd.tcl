@@ -247,11 +247,22 @@ ad_connect ref_clk axi_adrv9009_tx_clkgen/clk
 ad_xcvrpll $tx_ref_clk util_adrv9009_xcvr/qpll_ref_clk_0
 ad_xcvrpll axi_adrv9009_tx_xcvr/up_pll_rst util_adrv9009_xcvr/up_qpll_rst_0
 
+# Dpd waveform mem
+ad_ip_instance axi_dpd_waveform axi_dpd_waveform_0
+ad_connect axi_adrv9009_tx_clkgen/clk_0 axi_dpd_waveform_0/data_clk
+ad_connect $sys_cpu_resetn axi_dpd_waveform_0/data_rstn
+
+ad_ip_instance axi_dpd_waveform axi_dpd_waveform_1
+ad_connect axi_adrv9009_tx_clkgen/clk_0 axi_dpd_waveform_1/data_clk
+ad_connect $sys_cpu_resetn axi_dpd_waveform_1/data_rstn
+
 # util_luts_addr_gen for DPD Actuator
 ad_ip_instance util_luts_addr_gen util_luts_addr_gen_0
 ad_connect axi_adrv9009_tx_clkgen/clk_0 util_luts_addr_gen_0/data_clk
 ad_connect $sys_cpu_resetn util_luts_addr_gen_0/data_rstn
 ad_connect util_luts_addr_gen_0/data_in_enable VCC
+#ad_connect  axi_dpd_waveform_0/data_out util_luts_addr_gen_0/data_in_0
+#ad_connect  axi_dpd_waveform_1/data_out util_luts_addr_gen_0/data_in_1
 
 # Dpd Actuator
 ad_ip_instance axi_dpd_actuator axi_dpd_actuator_0
@@ -489,7 +500,8 @@ ad_cpu_interconnect 0x7c440000 axi_adrv9009_rx_os_dma
 ad_cpu_interconnect 0x46000000 axi_dpd_actuator_0
 ad_cpu_interconnect 0x46100000 axi_dpd_capture_0
 ad_cpu_interconnect 0x46200000 axi_dpd_capture_1
-
+ad_cpu_interconnect 0x46300000 axi_dpd_waveform_0
+ad_cpu_interconnect 0x46400000 axi_dpd_waveform_1
 
 # gt uses hp0, and 100MHz clock for both DRP and AXI4
 
