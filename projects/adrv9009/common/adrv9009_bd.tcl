@@ -261,8 +261,8 @@ ad_ip_instance util_luts_addr_gen util_luts_addr_gen_0
 ad_connect axi_adrv9009_tx_clkgen/clk_0 util_luts_addr_gen_0/data_clk
 ad_connect $sys_cpu_resetn util_luts_addr_gen_0/data_rstn
 ad_connect util_luts_addr_gen_0/data_in_enable VCC
-#ad_connect  axi_dpd_waveform_0/data_out util_luts_addr_gen_0/data_in_0
-#ad_connect  axi_dpd_waveform_1/data_out util_luts_addr_gen_0/data_in_1
+ad_connect  axi_dpd_waveform_0/data_out util_luts_addr_gen_0/data_in_0
+ad_connect  axi_dpd_waveform_1/data_out util_luts_addr_gen_0/data_in_1
 
 # Dpd Actuator
 ad_ip_instance axi_dpd_actuator axi_dpd_actuator_0
@@ -388,8 +388,8 @@ for {set i 0} {$i < $TX_NUM_OF_CONVERTERS} {incr i} {
 
 #  ad_connect  tx_fir_interpolator/data_out_${i}  tx_adrv9009_tpl_core/dac_data_$i
 }
-ad_connect  tx_fir_interpolator/data_out_0  util_luts_addr_gen_0/data_in_0
-ad_connect  tx_fir_interpolator/data_out_1  util_luts_addr_gen_0/data_in_1
+#ad_connect  tx_fir_interpolator/data_out_0  util_luts_addr_gen_0/data_in_0
+#ad_connect  tx_fir_interpolator/data_out_1  util_luts_addr_gen_0/data_in_1
 
 ad_connect  util_luts_addr_gen_0/data_out_0  axi_dpd_actuator_0/data_in_0
 ad_connect  util_luts_addr_gen_0/data_out_1  axi_dpd_actuator_0/data_in_1
@@ -397,8 +397,11 @@ ad_connect  util_luts_addr_gen_0/data_out_2  axi_dpd_actuator_0/data_in_2
 
 ad_connect  axi_dpd_actuator_0/data_out_0   tx_adrv9009_tpl_core/dac_data_0
 ad_connect  axi_dpd_actuator_0/data_out_1   tx_adrv9009_tpl_core/dac_data_1
-ad_connect  tx_fir_interpolator/data_out_2  tx_adrv9009_tpl_core/dac_data_2
-ad_connect  tx_fir_interpolator/data_out_3  tx_adrv9009_tpl_core/dac_data_3
+ad_connect  axi_dpd_waveform_0/data_out     tx_adrv9009_tpl_core/dac_data_2
+ad_connect  axi_dpd_waveform_1/data_out     tx_adrv9009_tpl_core/dac_data_3
+#ad_connect  tx_fir_interpolator/data_out_2  tx_adrv9009_tpl_core/dac_data_2
+#ad_connect  tx_fir_interpolator/data_out_3  tx_adrv9009_tpl_core/dac_data_3
+
 
 ad_connect  tx_fir_interpolator/active dac_fir_filter_active
 
