@@ -20,6 +20,7 @@ module dpd_lut_row_v2_tb;
     wire  [DATA_WIDTH-1+`EXTRA_BITS*2:0] hout_odd;
     wire  [DATA_WIDTH-1+`EXTRA_BITS*2:0] hout_even;
 
+    reg     [1:0]               lut_sel;
     reg                         enc;
     reg     [I_DELAY_MAX-1:0]   lutIdc;
     reg                         wec;
@@ -97,6 +98,7 @@ endtask
         // free luts
         free_lut;
         lutIdc = 0;
+        lut_sel = 2'b00;
         wait(rst_n == 1);
         #100;
 

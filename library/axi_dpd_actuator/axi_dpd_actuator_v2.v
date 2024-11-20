@@ -67,6 +67,7 @@ module axi_dpd_actuator_v2 #(
 // dpd_out_sel      0x0010      0x0004      [3:0]     R/W     0x0000_0000
 // dpd_lutIdc_l     0x0014      0x0005      [31:0]    R/W     0x0000_0000
 // dpd_lutIdc_h     0x0018      0x0006      [31:0]    R/W     0x0000_0000
+// dpd_lut_sel      0x001C      0x0007      [1:0]     R/W     2'b00
 ////////////////////////////////////////////////////////////////////////////
 // lut entries      axi-addr    up_addr     bit       R/W     Default
 // lut[0]           0x8000      0x2000      [31:0]    R/W     0x0000_0000
@@ -85,6 +86,7 @@ module axi_dpd_actuator_v2 #(
     reg   [3:0]                 dpd_out_sel;
     reg   [31:0]                dpd_lutIdc_l;
     reg   [31:0]                dpd_lutIdc_h;
+    reg   [1:0]                 dpd_lut_sel;
 
     // lutfifo_wr interface: from module up_axi to dpd_actuator 
     // wfifo_wdata[13:0] <= up_waddr_s | 14'h1000;
@@ -308,6 +310,7 @@ module axi_dpd_actuator_v2 #(
             dpd_out_sel <= 0;
             dpd_lutIdc_l <= 0;
             dpd_lutIdc_h <= 0;
+            dpd_lut_sel <= 0;
         end
         else begin
             if(up_wreq_s && ~up_waddr_s[13]) begin
@@ -323,6 +326,9 @@ module axi_dpd_actuator_v2 #(
 
                 if(up_waddr_s[3:0] == 6)
                     dpd_lutIdc_h <= up_wdata_s;
+
+                if(up_waddr_s[3:0] == 7)
+                    dpd_lut_sel <= up_wdata_s;
             end
         end
 
@@ -362,6 +368,8 @@ module axi_dpd_actuator_v2 #(
                     up_rdata_s <= dpd_lutIdc_l;
                 else if(up_raddr_s[3:0] == 6)
                     up_rdata_s <= dpd_lutIdc_h;
+                else if(up_raddr_s[3:0] == 7)
+                    up_rdata_s <= dpd_lut_sel;
                 else
                     up_rdata_s <= 0;
             end
@@ -389,6 +397,7 @@ module axi_dpd_actuator_v2 #(
         .tx_valid(dpd_tx_valid),
 
         // configuration
+        .lut_sel(dpd_lut_sel),
         .enc(dpd_enc),
         .lutIdc(dpd_lutIdc),
         .wec(dpd_wec),

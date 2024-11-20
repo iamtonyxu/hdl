@@ -12,6 +12,7 @@ module dpd_lut_v2_tb;
     // configuration port
     reg                         clk;
     reg                         rst_n;
+    reg     [1:0]               lut_sel;
     reg                         enc;
     reg                         wec;
     reg     [ADDR_WIDTH-1:0]    addrc;
@@ -96,12 +97,18 @@ endtask
         addra = 0;
         addrb = 0;
         lut_updated = 0;
+        lut_sel = 2'b00;
 
         wait(rst_n == 1);
         #100;
         // write luts
+        lut_sel = 2'b00;
         for(i = 0; i < 2**ADDR_WIDTH; i = i+1) begin
             write_lut(i, 32'h1111_1111 * i);
+        end
+        lut_sel = 2'b10;
+        for(i = 0; i < 2**ADDR_WIDTH; i = i+1) begin
+            write_lut(i, 32'h1234_5678 + i);
         end
 
         #100;
@@ -118,7 +125,17 @@ endtask
             addrb = i;
             @(posedge clk);
         end
-        #100;
+        #1000;
+
+        @(posedge clk);
+        lut_sel = 2'b01;
+        // read data via port-A and port-B
+        for(i = 0; i < 2**ADDR_WIDTH; i = i+1) begin
+            addra = i;
+            addrb = i;
+            @(posedge clk);
+        end
+        #1000;
 
     end
 
@@ -134,6 +151,7 @@ endtask
         // with the same clk as port-A and port-B
         .clk(clk),
         .rst_n(rst_n),
+        .lut_sel(lut_sel),
         .enc(enc),
         .wec(wec),
         .addrc(addrc),

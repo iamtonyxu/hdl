@@ -22,6 +22,7 @@ module dpd_actuator_v2 #(
     output                      tx_valid,
 
     // configuration port
+    input   [1:0]               lut_sel,
     input                       enc,
     input   [`ID_MAX-1:0]       lutIdc,
     input                       wec,
@@ -163,6 +164,7 @@ module dpd_actuator_v2 #(
                 .hout_even(hout_even_delay[(HOUT_WIDTH)*(row+1)-1:(HOUT_WIDTH)*row]),
 
                 //configration port
+                .lut_sel(lut_sel),
                 .enc(enc),
                 .lutIdc(lutIdc[`I_DELAY_MAX*(row+1)-1:`I_DELAY_MAX*row]),
                 .wec(wec),
