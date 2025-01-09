@@ -1,6 +1,6 @@
 /*
 *   rxqec_core
-*   Latency = 24 clk periods
+*   Latency = 25 clk periods
 */
 `timescale 1ns/100ps
 module rxqec_core
@@ -31,7 +31,7 @@ module rxqec_core
 
     output [31:0] debug_bus
 );
-    localparam LATENCY = 24;
+    localparam LATENCY = 25;
     localparam GAP_DELAY = 10;
 
     wire [31:0] qfir_out;

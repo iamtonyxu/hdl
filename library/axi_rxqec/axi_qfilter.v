@@ -1,6 +1,6 @@
 /*
 * Parallel I-Filter
-* Taps = 15, latency = 23 clk periods
+* Taps = 15, latency = 24 clk periods
 *
 */
 `timescale 1ns/100ps
@@ -138,8 +138,8 @@ module axi_qfilter
             ay_d14 <= 0; by_d14 <= 0;
         end
         else begin
-            ay_d1 = am0 + am1 + am2 + am3 + am4 + am5 + am6 + am7 + am8 + am9 + am10 + am11 + am12 + am13 + am14;
-            by_d1 = bm0 + bm1 + bm2 + bm3 + bm4 + bm5 + bm6 + bm7 + bm8 + bm9 + bm10 + bm11 + bm12 + bm13 + bm14;
+            ay_d1 <= am0 + am1 + am2 + am3 + am4 + am5 + am6 + am7 + am8 + am9 + am10 + am11 + am12 + am13 + am14;
+            by_d1 <= bm0 + bm1 + bm2 + bm3 + bm4 + bm5 + bm6 + bm7 + bm8 + bm9 + bm10 + bm11 + bm12 + bm13 + bm14;
             
             ay_d2  <= ay_d1;  by_d2  <= by_d1;
             ay_d3  <= ay_d2;  by_d3  <= by_d2;

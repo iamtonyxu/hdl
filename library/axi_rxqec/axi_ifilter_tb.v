@@ -4,6 +4,7 @@ module axi_ifilter_tb;
     localparam CLK_PERIOD = 10;
     localparam DATA_LENGTH = 512;
     localparam IFIR_TAPS = 7;
+    localparam LATENCY = 14+1;
 
     reg clk;
     reg rst_n;
@@ -101,10 +102,10 @@ module axi_ifilter_tb;
     always@(posedge clk or negedge rst_n)
         if(~rst_n)
             latency_cnt <= 0;
-        else if(latency_cnt < 14)
+        else if(latency_cnt < LATENCY)
             latency_cnt <= latency_cnt + 1;
 
-    assign dout_valid = (latency_cnt == 14) ? 1 : 0;
+    assign dout_valid = (latency_cnt == LATENCY) ? 1 : 0;
 
     always@(posedge clk or negedge rst_n)
         if(~rst_n) begin

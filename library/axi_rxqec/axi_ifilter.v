@@ -1,6 +1,6 @@
 /*
 * Parallel I-Filter
-* Taps = 7, latency = 13 clk periods
+* Taps = 7, latency = 14 clk periods
 * y[n] = x[n-3]h[3] + x[n-2]h[2] + x[n-1]h[1] + x[n]h[0] + x[n+1]h[1] + x[n+2]h[2] + x[n+3]h[3]
 */
 `timescale 1ns/100ps
@@ -93,8 +93,8 @@ module axi_ifilter
             ay_d6 <= 0; by_d6 <= 0;
         end
         else begin
-            ay_d1 = am0 + am1 + am2 + am3 + am4 + am5 + am6;
-            by_d1 = bm0 + bm1 + bm2 + bm3 + bm4 + bm5 + bm6;
+            ay_d1 <= am0 + am1 + am2 + am3 + am4 + am5 + am6;
+            by_d1 <= bm0 + bm1 + bm2 + bm3 + bm4 + bm5 + bm6;
             ay_d2 <= ay_d1; ay_d3 <= ay_d2; ay_d4 <= ay_d3; ay_d5 <= ay_d4; ay_d6 <= ay_d5;
             by_d2 <= by_d1; by_d3 <= by_d2; by_d4 <= by_d3; by_d5 <= by_d4; by_d6 <= by_d5;           
         end

@@ -4,7 +4,7 @@ module axi_qfilter_tb;
     localparam CLK_PERIOD = 10;
     localparam DATA_LENGTH = 512;
     localparam QFIR_TAPS = 15;
-    localparam LATENCY = 24;
+    localparam LATENCY = 24+1;
 
     reg clk;
     reg rst_n;
