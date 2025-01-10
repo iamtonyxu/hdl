@@ -81,6 +81,9 @@ module axi_rxqec
     reg                         up_rack_s;
     reg                         up_rreq_s_d1;
 
+    wire [31:0] dout_i_w;
+    wire [31:0] dout_q_w;
+
     // up_axi
     assign up_clk = s_axi_aclk;
     assign up_rstn = s_axi_aresetn;
@@ -244,8 +247,8 @@ module axi_rxqec
         .rst_n(rst_n),
         .din_i(din_i),
         .din_q(din_q),
-        .dout_i(dout_i),
-        .dout_q(dout_q),
+        .dout_i(dout_i_w),
+        .dout_q(dout_q_w),
         .hi0(hi0),
         .hi1(hi1),
         .hi2(hi2),
@@ -260,5 +263,8 @@ module axi_rxqec
         .hq7(hq7),
         .debug_bus()
     );
+
+    assign dout_i = enable[0] ? dout_i_w : din_i;
+    assign dout_q = enable[0] ? dout_q_w : din_q;
 
 endmodule

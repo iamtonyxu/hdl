@@ -412,11 +412,21 @@ ad_connect  axi_adrv9009_rx_os_clkgen/clk_0 util_adrv9009_rx_os_cpack/clk
 ad_connect  adrv9009_rx_os_device_clk_rstgen/peripheral_reset util_adrv9009_rx_os_cpack/reset
 ad_connect  axi_adrv9009_rx_os_clkgen/clk_0 axi_adrv9009_rx_os_dma/fifo_wr_clk
 
+# axi_rxqec
+ad_ip_instance axi_rxqec axi_rxqec_0
+ad_connect axi_adrv9009_rx_os_clkgen/clk_0 axi_rxqec_0/clk
+ad_connect $sys_cpu_resetn axi_rxqec_0/rst_n
+
 ad_connect  rx_os_adrv9009_tpl_core/adc_valid_0 util_adrv9009_rx_os_cpack/fifo_wr_en
 for {set i 0} {$i < $RX_OS_NUM_OF_CONVERTERS} {incr i} {
   ad_connect  rx_os_adrv9009_tpl_core/adc_enable_$i util_adrv9009_rx_os_cpack/enable_$i
-  ad_connect  rx_os_adrv9009_tpl_core/adc_data_$i util_adrv9009_rx_os_cpack/fifo_wr_data_$i
+  #ad_connect  rx_os_adrv9009_tpl_core/adc_data_$i util_adrv9009_rx_os_cpack/fifo_wr_data_$i
 }
+ad_connect  rx_os_adrv9009_tpl_core/adc_data_0 axi_rxqec_0/din_i
+ad_connect  rx_os_adrv9009_tpl_core/adc_data_1 axi_rxqec_0/din_q
+ad_connect  axi_rxqec_0/dout_i util_adrv9009_rx_os_cpack/fifo_wr_data_0
+ad_connect  axi_rxqec_0/dout_q util_adrv9009_rx_os_cpack/fifo_wr_data_1
+
 ad_connect  rx_os_adrv9009_tpl_core/adc_dovf util_adrv9009_rx_os_cpack/fifo_wr_overflow
 ad_connect  util_adrv9009_rx_os_cpack/packed_fifo_wr axi_adrv9009_rx_os_dma/fifo_wr
 
@@ -439,6 +449,7 @@ ad_cpu_interconnect 0x44A50000 axi_adrv9009_rx_os_xcvr
 ad_cpu_interconnect 0x43C20000 axi_adrv9009_rx_os_clkgen
 ad_cpu_interconnect 0x44AB0000 axi_adrv9009_rx_os_jesd
 ad_cpu_interconnect 0x7c440000 axi_adrv9009_rx_os_dma
+ad_cpu_interconnect 0x46000000 axi_rxqec_0
 
 # gt uses hp0, and 100MHz clock for both DRP and AXI4
 
