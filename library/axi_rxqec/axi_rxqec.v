@@ -51,22 +51,34 @@ module axi_rxqec
 // hi1              0x0014      0x0005      [15:0]    R/W     16'h0000
 // hi2              0x0018      0x0006      [15:0]    R/W     16'h0000
 // hi3              0x001C      0x0007      [15:0]    R/W     16'h0000
-// hq0              0x0020      0x0008      [15:0]    R/W     16'h0000
-// hq1              0x0024      0x0009      [15:0]    R/W     16'h0000
-// hq2              0x0028      0x000A      [15:0]    R/W     16'h0000
-// hq3              0x002C      0x000B      [15:0]    R/W     16'h0000
-// hq4              0x0030      0x000C      [15:0]    R/W     16'h0000
-// hq5              0x0034      0x000D      [15:0]    R/W     16'h0000
-// hq6              0x0038      0x000E      [15:0]    R/W     16'h0000
-// hq7              0x003C      0x000F      [15:0]    R/W     16'h0000
+// hi4              0x0020      0x0008      [15:0]    R/W     16'h0000
+// hi5              0x0024      0x0009      [15:0]    R/W     16'h0000
+// hi6              0x0028      0x000A      [15:0]    R/W     16'h0000
+
+// hq0              0x0030      0x000C      [15:0]    R/W     16'h0000
+// hq1              0x0034      0x000D      [15:0]    R/W     16'h0000
+// hq2              0x0038      0x000E      [15:0]    R/W     16'h0000
+// hq3              0x003C      0x000F      [15:0]    R/W     16'h0000
+// hq4              0x0040      0x0010      [15:0]    R/W     16'h0000
+// hq5              0x0044      0x0011      [15:0]    R/W     16'h0000
+// hq6              0x0048      0x0012      [15:0]    R/W     16'h0000
+// hq7              0x004C      0x0013      [15:0]    R/W     16'h0000
+// hq8              0x0050      0x0014      [15:0]    R/W     16'h0000
+// hq9              0x0054      0x0015      [15:0]    R/W     16'h0000
+// hq10             0x0058      0x0016      [15:0]    R/W     16'h0000
+// hq11             0x005C      0x0017      [15:0]    R/W     16'h0000
+// hq12             0x0060      0x0018      [15:0]    R/W     16'h0000
+// hq13             0x0064      0x0019      [15:0]    R/W     16'h0000
+// hq14             0x0068      0x001A      [15:0]    R/W     16'h0000
+
 ////////////////////////////////////////////////////////////////////////////
 
     // internal registers
     reg   [31:0]                scratch;
     reg   [31:0]                enable;
     reg   [31:0]                reserved;
-    reg   [15:0]                hi0, hi1, hi2, hi3;
-    reg   [15:0]                hq0, hq1, hq2, hq3, hq4, hq5, hq6, hq7;
+    reg   [15:0]                hi0, hi1, hi2, hi3, hi4, hi5, hi6;
+    reg   [15:0]                hq0, hq1, hq2, hq3, hq4, hq5, hq6, hq7, hq8, hq9, hq10, hq11, hq12, hq13, hq14;
 
     // up_axi interface
     wire                        up_clk;
@@ -138,6 +150,9 @@ module axi_rxqec
         hi1         <= 0;
         hi2         <= 0;
         hi3         <= 0;
+        hi4         <= 0;
+        hi5         <= 0;
+        hi6         <= 0;
         hq0         <= 0;
         hq1         <= 0;
         hq2         <= 0;
@@ -146,6 +161,13 @@ module axi_rxqec
         hq5         <= 0;
         hq6         <= 0;
         hq7         <= 0;
+        hq8         <= 0;
+        hq9         <= 0;
+        hq10        <= 0;
+        hq11        <= 0;
+        hq12        <= 0;
+        hq13        <= 0;
+        hq14        <= 0;
     end
     else begin
         if(up_wreq_s) begin
@@ -172,28 +194,58 @@ module axi_rxqec
                 hi3      <=  up_wdata_s;
 
             if(up_waddr_s[4:0] == 5'h08)
-                hq0      <=  up_wdata_s;
+                hi4      <=  up_wdata_s;
 
             if(up_waddr_s[4:0] == 5'h09)
-                hq1      <=  up_wdata_s;
+                hi5      <=  up_wdata_s;
 
             if(up_waddr_s[4:0] == 5'h0A)
-                hq2      <=  up_wdata_s;
-
-            if(up_waddr_s[4:0] == 5'h0B)
-                hq3      <=  up_wdata_s;
+                hi6      <=  up_wdata_s;
 
             if(up_waddr_s[4:0] == 5'h0C)
-                hq4      <=  up_wdata_s;
+                hq0      <=  up_wdata_s;
 
             if(up_waddr_s[4:0] == 5'h0D)
-                hq5      <=  up_wdata_s;
+                hq1      <=  up_wdata_s;
 
             if(up_waddr_s[4:0] == 5'h0E)
-                hq6      <=  up_wdata_s;
+                hq2      <=  up_wdata_s;
 
             if(up_waddr_s[4:0] == 5'h0F)
+                hq3      <=  up_wdata_s;
+
+            if(up_waddr_s[4:0] == 5'h10)
+                hq4      <=  up_wdata_s;
+
+            if(up_waddr_s[4:0] == 5'h11)
+                hq5      <=  up_wdata_s;
+
+            if(up_waddr_s[4:0] == 5'h12)
+                hq6      <=  up_wdata_s;
+
+            if(up_waddr_s[4:0] == 5'h13)
                 hq7      <=  up_wdata_s;
+
+            if(up_waddr_s[4:0] == 5'h14)
+                hq8      <=  up_wdata_s;
+
+            if(up_waddr_s[4:0] == 5'h15)
+                hq9      <=  up_wdata_s;
+
+            if(up_waddr_s[4:0] == 5'h16)
+                hq10      <=  up_wdata_s;
+
+            if(up_waddr_s[4:0] == 5'h17)
+                hq11      <=  up_wdata_s;
+
+            if(up_waddr_s[4:0] == 5'h18)
+                hq12      <=  up_wdata_s;
+
+            if(up_waddr_s[4:0] == 5'h19)
+                hq13      <=  up_wdata_s;
+
+            if(up_waddr_s[4:0] == 5'h1A)
+                hq14      <=  up_wdata_s;
         end
     end
 
@@ -223,14 +275,26 @@ module axi_rxqec
                     5'h05: up_rdata_s <= {16'd0, hi1};
                     5'h06: up_rdata_s <= {16'd0, hi2};
                     5'h07: up_rdata_s <= {16'd0, hi3};
-                    5'h08: up_rdata_s <= {16'd0, hq0};
-                    5'h09: up_rdata_s <= {16'd0, hq1};
-                    5'h0A: up_rdata_s <= {16'd0, hq2};
-                    5'h0B: up_rdata_s <= {16'd0, hq3};
-                    5'h0C: up_rdata_s <= {16'd0, hq4};
-                    5'h0D: up_rdata_s <= {16'd0, hq5};
-                    5'h0E: up_rdata_s <= {16'd0, hq6};
-                    5'h0F: up_rdata_s <= {16'd0, hq7};
+                    5'h08: up_rdata_s <= {16'd0, hi4};
+                    5'h09: up_rdata_s <= {16'd0, hi5};
+                    5'h0A: up_rdata_s <= {16'd0, hi6};
+
+                    5'h0C: up_rdata_s <= {16'd0, hq0};
+                    5'h0D: up_rdata_s <= {16'd0, hq1};
+                    5'h0E: up_rdata_s <= {16'd0, hq2};
+                    5'h0F: up_rdata_s <= {16'd0, hq3};
+                    5'h10: up_rdata_s <= {16'd0, hq4};
+                    5'h11: up_rdata_s <= {16'd0, hq5};
+                    5'h12: up_rdata_s <= {16'd0, hq6};
+                    5'h13: up_rdata_s <= {16'd0, hq7};
+                    5'h14: up_rdata_s <= {16'd0, hq8};
+                    5'h15: up_rdata_s <= {16'd0, hq9};
+                    5'h16: up_rdata_s <= {16'd0, hq10};
+                    5'h17: up_rdata_s <= {16'd0, hq11};
+                    5'h18: up_rdata_s <= {16'd0, hq12};
+                    5'h19: up_rdata_s <= {16'd0, hq13};
+                    5'h1A: up_rdata_s <= {16'd0, hq14};
+
                     default: up_rdata_s <= 0;
                 endcase
             end
@@ -253,6 +317,10 @@ module axi_rxqec
         .hi1(hi1),
         .hi2(hi2),
         .hi3(hi3),
+        .hi4(hi4),
+        .hi5(hi5),
+        .hi6(hi6),
+
         .hq0(hq0),
         .hq1(hq1),
         .hq2(hq2),
@@ -261,6 +329,13 @@ module axi_rxqec
         .hq5(hq5),
         .hq6(hq6),
         .hq7(hq7),
+        .hq8(hq8),
+        .hq9(hq9),
+        .hq10(hq10),
+        .hq11(hq11),
+        .hq12(hq12),
+        .hq13(hq13),
+        .hq14(hq14),
         .debug_bus()
     );
 

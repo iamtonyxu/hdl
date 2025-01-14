@@ -14,6 +14,9 @@ module axi_ifilter
     input signed [15:0]h1,
     input signed [15:0]h2,
     input signed [15:0]h3,
+    input signed [15:0]h4,
+    input signed [15:0]h5,
+    input signed [15:0]h6,
 
     input   [31:0]din,
     output  [31:0]dout
@@ -56,13 +59,13 @@ module axi_ifilter
             am6_d1 <= 0; bm6_d1 <= 0;
         end
         else begin
-            am0_d1 <= x0*h3; bm0_d1 <= x1*h3; 
-            am1_d1 <= x1*h2; bm1_d1 <= x2*h2;
-            am2_d1 <= x2*h1; bm2_d1 <= x3*h1;
-            am3_d1 <= x3*h0; bm3_d1 <= x4*h0;
-            am4_d1 <= x4*h1; bm4_d1 <= x5*h1;
-            am5_d1 <= x5*h2; bm5_d1 <= x6*h2;
-            am6_d1 <= x6*h3; bm6_d1 <= x7*h3;
+            am0_d1 <= x0*h0; bm0_d1 <= x1*h0;
+            am1_d1 <= x1*h1; bm1_d1 <= x2*h1;
+            am2_d1 <= x2*h2; bm2_d1 <= x3*h2;
+            am3_d1 <= x3*h3; bm3_d1 <= x4*h3;
+            am4_d1 <= x4*h4; bm4_d1 <= x5*h4;
+            am5_d1 <= x5*h5; bm5_d1 <= x6*h5;
+            am6_d1 <= x6*h6; bm6_d1 <= x7*h6;
         end
 
     // am_delay, bm_delay

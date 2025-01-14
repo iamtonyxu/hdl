@@ -20,6 +20,9 @@ module rxqec_core_tb;
     reg signed [15:0]hi1;
     reg signed [15:0]hi2;
     reg signed [15:0]hi3;
+    reg signed [15:0]hi4;
+    reg signed [15:0]hi5;
+    reg signed [15:0]hi6;
 
     reg signed [15:0]hq0;
     reg signed [15:0]hq1;
@@ -29,6 +32,13 @@ module rxqec_core_tb;
     reg signed [15:0]hq5;
     reg signed [15:0]hq6;
     reg signed [15:0]hq7;
+    reg signed [15:0]hq8;
+    reg signed [15:0]hq9;
+    reg signed [15:0]hq10;
+    reg signed [15:0]hq11;
+    reg signed [15:0]hq12;
+    reg signed [15:0]hq13;
+    reg signed [15:0]hq14;
     
     reg [31:0] mem_din_i[0:DATA_LENGTH-1];
     reg [31:0] mem_din_q[0:DATA_LENGTH-1];
@@ -61,19 +71,34 @@ module rxqec_core_tb;
         hq1 = 0; hi1 = 0;
         hq2 = 0; hi2 = 0;
         hq3 = 0; hi3 = 0;
-        hq4 = 0;
-        hq5 = 0;
-        hq6 = 0;
+        hq4 = 0; hi4 = 0;
+        hq5 = 0; hi5 = 0;
+        hq6 = 0; hi6 = 0;
         hq7 = 0;
+        hq8 = 0;
+        hq9 = 0;
+        hq10 = 0;
+        hq11 = 0;
+        hq12 = 0;
+        hq13 = 0;
+        hq14 = 0;
+
         wait (rst_n == 1);
-        hq0 = mem_hq[7]; hi0 = mem_hi[3];
-        hq1 = mem_hq[6]; hi1 = mem_hi[2];
-        hq2 = mem_hq[5]; hi2 = mem_hi[1];
-        hq3 = mem_hq[4]; hi3 = mem_hi[0];
-        hq4 = mem_hq[3];
-        hq5 = mem_hq[2];
-        hq6 = mem_hq[1];
-        hq7 = mem_hq[0];
+        hq0 = mem_hq[0]; hi0 = mem_hi[0];
+        hq1 = mem_hq[1]; hi1 = mem_hi[1];
+        hq2 = mem_hq[2]; hi2 = mem_hi[2];
+        hq3 = mem_hq[3]; hi3 = mem_hi[3];
+        hq4 = mem_hq[4]; hi4 = mem_hi[4];
+        hq5 = mem_hq[5]; hi5 = mem_hi[5];
+        hq6 = mem_hq[6]; hi6 = mem_hi[6];
+        hq7 = mem_hq[7];
+        hq8 = mem_hq[8];
+        hq9 = mem_hq[9];
+        hq10 =mem_hq[10];
+        hq11 =mem_hq[11];
+        hq12 =mem_hq[12];
+        hq13 =mem_hq[13];
+        hq14 =mem_hq[14];
     end
 
     // data input
@@ -104,6 +129,10 @@ rxqec_core dut
     .hi1(hi1),
     .hi2(hi2),
     .hi3(hi3),
+    .hi4(hi4),
+    .hi5(hi5),
+    .hi6(hi6),
+
     .hq0(hq0),
     .hq1(hq1),
     .hq2(hq2),
@@ -112,6 +141,13 @@ rxqec_core dut
     .hq5(hq5),
     .hq6(hq6),
     .hq7(hq7),
+    .hq8(hq8),
+    .hq9(hq9),
+    .hq10(hq10),
+    .hq11(hq11),
+    .hq12(hq12),
+    .hq13(hq13),
+    .hq14(hq14),
     .debug_bus()
 );
 

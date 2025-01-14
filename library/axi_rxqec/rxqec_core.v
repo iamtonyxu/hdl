@@ -18,6 +18,9 @@ module rxqec_core
     input signed [15:0]hi1,
     input signed [15:0]hi2,
     input signed [15:0]hi3,
+    input signed [15:0]hi4,
+    input signed [15:0]hi5,
+    input signed [15:0]hi6,
 
     // QTaps = 2*7 + 1 = 15
     input signed [15:0]hq0,
@@ -28,6 +31,13 @@ module rxqec_core
     input signed [15:0]hq5,
     input signed [15:0]hq6,
     input signed [15:0]hq7,
+    input signed [15:0]hq8,
+    input signed [15:0]hq9,
+    input signed [15:0]hq10,
+    input signed [15:0]hq11,
+    input signed [15:0]hq12,
+    input signed [15:0]hq13,
+    input signed [15:0]hq14,
 
     output [31:0] debug_bus
 );
@@ -52,6 +62,13 @@ module rxqec_core
         .h5(hq5),
         .h6(hq6),
         .h7(hq7),
+        .h8(hq8),
+        .h9(hq9),
+        .h10(hq10),
+        .h11(hq11),
+        .h12(hq12),
+        .h13(hq13),
+        .h14(hq14),
         .din(din_q),
         .dout(qfir_out)
     );
@@ -66,6 +83,9 @@ module rxqec_core
         .h1(hi1),
         .h2(hi2),
         .h3(hi3),
+        .h4(hi4),
+        .h5(hi5),
+        .h6(hi6),
         .din(din_i),
         .dout(ifir_out)
     );

@@ -15,6 +15,10 @@ module axi_ifilter_tb;
     reg signed [15:0]h1;
     reg signed [15:0]h2;
     reg signed [15:0]h3;
+    reg signed [15:0]h4;
+    reg signed [15:0]h5;
+    reg signed [15:0]h6;
+
     reg signed [15:0]x0;
     reg signed [15:0]x1;
     wire [31:0]din;
@@ -48,13 +52,18 @@ module axi_ifilter_tb;
         h1 = 0;
         h2 = 0;
         h3 = 0;
+        h4 = 0;
+        h5 = 0;
+        h6 = 0;
         wait (rst_n == 1);
         
-        h0 = mem_hi[3];
-        h1 = mem_hi[2];
-        h2 = mem_hi[1];
-        h3 = mem_hi[0];
-
+        h0 = mem_hi[0];
+        h1 = mem_hi[1];
+        h2 = mem_hi[2];
+        h3 = mem_hi[3];
+        h4 = mem_hi[4];
+        h5 = mem_hi[5];
+        h6 = mem_hi[6];
     end
 
     //x0, x1
@@ -91,6 +100,9 @@ module axi_ifilter_tb;
         .h1(h1),
         .h2(h2),
         .h3(h3),
+        .h4(h4),
+        .h5(h5),
+        .h6(h6),
         .din(din),
         .dout(dout)
     );

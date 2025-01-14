@@ -12,13 +12,11 @@ I_TAPS = I_TAPS_SIDE * 2 + 1;
 % generate filter coeffs
 if 1
     hq = ones(Q_TAPS, 1);
-    hq(1:Q_TAPS_SIDE) = rand(Q_TAPS_SIDE, 1)-0.5;
-    hq(Q_TAPS_SIDE + 1 + (1:Q_TAPS_SIDE)) = hq(Q_TAPS_SIDE:-1:1);
+    hq = rand(Q_TAPS, 1)-0.5;
     hq = hq ./ 2; % scale down in case of saturation while simulation
 
     hi = ones(I_TAPS, 1);
-    hi(1:I_TAPS_SIDE) = rand(I_TAPS_SIDE, 1)-0.5;
-    hi(I_TAPS_SIDE + 1 + (1:I_TAPS_SIDE)) = hi(I_TAPS_SIDE:-1:1);
+    hi = rand(I_TAPS, 1)-0.5;
     hi = hi ./ 10; % scale down in case of saturation while simulation
 else
     hq = zeros(Q_TAPS, 1);

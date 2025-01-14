@@ -18,6 +18,13 @@ module axi_qfilter
     input signed [15:0]h5,
     input signed [15:0]h6,
     input signed [15:0]h7,
+    input signed [15:0]h8,
+    input signed [15:0]h9,
+    input signed [15:0]h10,
+    input signed [15:0]h11,
+    input signed [15:0]h12,
+    input signed [15:0]h13,
+    input signed [15:0]h14,
 
     input   [31:0]din,
     output  [31:0]dout
@@ -68,21 +75,21 @@ module axi_qfilter
             am14_d1 <= 0; bm14_d1 <= 0;
         end
         else begin
-            am0_d1  <= x0*h7;  bm0_d1  <= x1*h7; 
-            am1_d1  <= x1*h6;  bm1_d1  <= x2*h6;
-            am2_d1  <= x2*h5;  bm2_d1  <= x3*h5;
-            am3_d1  <= x3*h4;  bm3_d1  <= x4*h4;
-            am4_d1  <= x4*h3;  bm4_d1  <= x5*h3;
-            am5_d1  <= x5*h2;  bm5_d1  <= x6*h2;
-            am6_d1  <= x6*h1;  bm6_d1  <= x7*h1;
-            am7_d1  <= x7*h0;  bm7_d1  <= x8*h0; 
-            am8_d1  <= x8*h1;  bm8_d1  <= x9*h1;
-            am9_d1  <= x9*h2;  bm9_d1  <= x10*h2;
-            am10_d1 <= x10*h3; bm10_d1 <= x11*h3;
-            am11_d1 <= x11*h4; bm11_d1 <= x12*h4;
-            am12_d1 <= x12*h5; bm12_d1 <= x13*h5;
-            am13_d1 <= x13*h6; bm13_d1 <= x14*h6;
-            am14_d1 <= x14*h7; bm14_d1 <= x15*h7;
+            am0_d1  <= x0*h0;   bm0_d1  <= x1*h0;  
+            am1_d1  <= x1*h1;   bm1_d1  <= x2*h1;  
+            am2_d1  <= x2*h2;   bm2_d1  <= x3*h2;  
+            am3_d1  <= x3*h3;   bm3_d1  <= x4*h3;  
+            am4_d1  <= x4*h4;   bm4_d1  <= x5*h4;  
+            am5_d1  <= x5*h5;   bm5_d1  <= x6*h5;  
+            am6_d1  <= x6*h6;   bm6_d1  <= x7*h6;  
+            am7_d1  <= x7*h7;   bm7_d1  <= x8*h7;  
+            am8_d1  <= x8*h8;   bm8_d1  <= x9*h8;  
+            am9_d1  <= x9*h9;   bm9_d1  <= x10*h9;  
+            am10_d1 <= x10*h10; bm10_d1 <= x11*h10;
+            am11_d1 <= x11*h11; bm11_d1 <= x12*h11;
+            am12_d1 <= x12*h12; bm12_d1 <= x13*h12;
+            am13_d1 <= x13*h13; bm13_d1 <= x14*h13;
+            am14_d1 <= x14*h14; bm14_d1 <= x15*h14;
         end
 
     // am_delay, bm_delay

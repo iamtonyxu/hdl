@@ -19,6 +19,13 @@ module axi_qfilter_tb;
     reg signed [15:0]h5;
     reg signed [15:0]h6;
     reg signed [15:0]h7;
+    reg signed [15:0]h8;
+    reg signed [15:0]h9;
+    reg signed [15:0]h10;
+    reg signed [15:0]h11;
+    reg signed [15:0]h12;
+    reg signed [15:0]h13;
+    reg signed [15:0]h14;
 
     reg signed [15:0]x0;
     reg signed [15:0]x1;
@@ -58,15 +65,30 @@ module axi_qfilter_tb;
         h5 = 0;
         h6 = 0;
         h7 = 0;
+        h8 = 0;
+        h9 = 0;
+        h10 = 0;
+        h11 = 0;
+        h12 = 0;
+        h13 = 0;
+        h14 = 0;
+
         wait (rst_n == 1);
-        h0 = mem_hq[7];
-        h1 = mem_hq[6];
-        h2 = mem_hq[5];
-        h3 = mem_hq[4]; 
-        h4 = mem_hq[3];
-        h5 = mem_hq[2];
-        h6 = mem_hq[1];
-        h7 = mem_hq[0];
+        h0  = mem_hq[0];
+        h1  = mem_hq[1];
+        h2  = mem_hq[2];
+        h3  = mem_hq[3]; 
+        h4  = mem_hq[4];
+        h5  = mem_hq[5];
+        h6  = mem_hq[6];
+        h7  = mem_hq[7];
+        h8  = mem_hq[8];
+        h9  = mem_hq[9];
+        h10 = mem_hq[10];
+        h11 = mem_hq[11];
+        h12 = mem_hq[12];
+        h13 = mem_hq[13];
+        h14 = mem_hq[14];
     end
 
     //x0, x1
@@ -107,6 +129,13 @@ module axi_qfilter_tb;
         .h5(h5),
         .h6(h6),
         .h7(h7),
+        .h8(h8),
+        .h9(h9),
+        .h10(h10),
+        .h11(h11),
+        .h12(h12),
+        .h13(h13),
+        .h14(h14),
         .din(din),
         .dout(dout)
     );

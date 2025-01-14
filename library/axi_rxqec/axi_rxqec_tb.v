@@ -21,6 +21,9 @@ module axi_rxqec_tb;
     reg signed [15:0]hi1;
     reg signed [15:0]hi2;
     reg signed [15:0]hi3;
+    reg signed [15:0]hi4;
+    reg signed [15:0]hi5;
+    reg signed [15:0]hi6;
 
     reg signed [15:0]hq0;
     reg signed [15:0]hq1;
@@ -30,6 +33,13 @@ module axi_rxqec_tb;
     reg signed [15:0]hq5;
     reg signed [15:0]hq6;
     reg signed [15:0]hq7;
+    reg signed [15:0]hq8;
+    reg signed [15:0]hq9;
+    reg signed [15:0]hq10;
+    reg signed [15:0]hq11;
+    reg signed [15:0]hq12;
+    reg signed [15:0]hq13;
+    reg signed [15:0]hq14;
 
     reg [31:0] mem_din_i[0:DATA_LENGTH-1];
     reg [31:0] mem_din_q[0:DATA_LENGTH-1];
@@ -158,10 +168,17 @@ module axi_rxqec_tb;
         hq1 = 0; hi1 = 0;
         hq2 = 0; hi2 = 0;
         hq3 = 0; hi3 = 0;
-        hq4 = 0;
-        hq5 = 0;
-        hq6 = 0;
+        hq4 = 0; hi4 = 0;
+        hq5 = 0; hi5 = 0;
+        hq6 = 0; hi6 = 0;
         hq7 = 0;
+        hq8 = 0;
+        hq9 = 0;
+        hq10 = 0;
+        hq11 = 0;
+        hq12 = 0;
+        hq13 = 0;
+        hq14 = 0;
         config_done = 0;
         s_axi_arvalid = 0;
         s_axi_araddr = 0;
@@ -169,15 +186,22 @@ module axi_rxqec_tb;
         
         wait (s_axi_aresetn == 1);
 
-        hq0 = mem_hq[7]; hi0 = mem_hi[3];
-        hq1 = mem_hq[6]; hi1 = mem_hi[2];
-        hq2 = mem_hq[5]; hi2 = mem_hi[1];
-        hq3 = mem_hq[4]; hi3 = mem_hi[0];
-        hq4 = mem_hq[3];
-        hq5 = mem_hq[2];
-        hq6 = mem_hq[1];
-        hq7 = mem_hq[0];
-        
+        hq0 = mem_hq[0]; hi0 = mem_hi[0];
+        hq1 = mem_hq[1]; hi1 = mem_hi[1];
+        hq2 = mem_hq[2]; hi2 = mem_hi[2];
+        hq3 = mem_hq[3]; hi3 = mem_hi[3];
+        hq4 = mem_hq[4]; hi4 = mem_hi[4];
+        hq5 = mem_hq[5]; hi5 = mem_hi[5];
+        hq6 = mem_hq[6]; hi6 = mem_hi[6];
+        hq7 = mem_hq[7];
+        hq8 = mem_hq[8];
+        hq9 = mem_hq[9];
+        hq10 =mem_hq[10];
+        hq11 =mem_hq[11];
+        hq12 =mem_hq[12];
+        hq13 =mem_hq[13];
+        hq14 =mem_hq[14];
+
         // write internal registers
         axi_write(16'h0004, 32'h1111_1111); // scratch
         axi_write(16'h0008, 32'h0000_0001); // enable
@@ -185,14 +209,25 @@ module axi_rxqec_tb;
         axi_write(16'h0014, {16'h0, hi1});  // hi1
         axi_write(16'h0018, {16'h0, hi2});  // hi2
         axi_write(16'h001C, {16'h0, hi3});  // hi3
-        axi_write(16'h0020, {16'h0, hq0});  // hq0
-        axi_write(16'h0024, {16'h0, hq1});  // hq1
-        axi_write(16'h0028, {16'h0, hq2});  // hq2
-        axi_write(16'h002C, {16'h0, hq3});  // hq3
-        axi_write(16'h0030, {16'h0, hq4});  // hq4
-        axi_write(16'h0034, {16'h0, hq5});  // hq5
-        axi_write(16'h0038, {16'h0, hq6});  // hq6
-        axi_write(16'h003C, {16'h0, hq7});  // hq7
+        axi_write(16'h0020, {16'h0, hi4});  // hi4
+        axi_write(16'h0024, {16'h0, hi5});  // hi5
+        axi_write(16'h0028, {16'h0, hi6});  // hi6
+
+        axi_write(16'h0030, {16'h0, hq0});  // hq0
+        axi_write(16'h0034, {16'h0, hq1});  // hq1
+        axi_write(16'h0038, {16'h0, hq2});  // hq2
+        axi_write(16'h003C, {16'h0, hq3});  // hq3
+        axi_write(16'h0040, {16'h0, hq4});  // hq4
+        axi_write(16'h0044, {16'h0, hq5});  // hq5
+        axi_write(16'h0048, {16'h0, hq6});  // hq6
+        axi_write(16'h004C, {16'h0, hq7});  // hq7
+        axi_write(16'h0050, {16'h0, hq8});  // hq8
+        axi_write(16'h0054, {16'h0, hq9});  // hq9
+        axi_write(16'h0058, {16'h0, hq10}); // hq10
+        axi_write(16'h005C, {16'h0, hq11}); // hq11
+        axi_write(16'h0060, {16'h0, hq12}); // hq12
+        axi_write(16'h0064, {16'h0, hq13}); // hq13
+        axi_write(16'h0068, {16'h0, hq14}); // hq14
         #100;
         
         // read internal registers
@@ -202,14 +237,26 @@ module axi_rxqec_tb;
         axi_read(16'h0014, axi_rdata); // hi1
         axi_read(16'h0018, axi_rdata); // hi2
         axi_read(16'h001C, axi_rdata); // hi3
-        axi_read(16'h0020, axi_rdata); // hq0
-        axi_read(16'h0024, axi_rdata); // hq1
-        axi_read(16'h0028, axi_rdata); // hq2
-        axi_read(16'h002C, axi_rdata); // hq3
-        axi_read(16'h0030, axi_rdata); // hq4
-        axi_read(16'h0034, axi_rdata); // hq5
-        axi_read(16'h0038, axi_rdata); // hq6
-        axi_read(16'h003C, axi_rdata); // hq7
+        axi_read(16'h0020, axi_rdata); // hi4
+        axi_read(16'h0024, axi_rdata); // hi5
+        axi_read(16'h0028, axi_rdata); // hi6
+
+        axi_read(16'h0030, axi_rdata); // hq0
+        axi_read(16'h0034, axi_rdata); // hq1
+        axi_read(16'h0038, axi_rdata); // hq2
+        axi_read(16'h003C, axi_rdata); // hq3
+        axi_read(16'h0040, axi_rdata); // hq4
+        axi_read(16'h0044, axi_rdata); // hq5
+        axi_read(16'h0048, axi_rdata); // hq6
+        axi_read(16'h004C, axi_rdata); // hq7
+        axi_read(16'h0050, axi_rdata); // hq8
+        axi_read(16'h0054, axi_rdata); // hq9
+        axi_read(16'h0058, axi_rdata); // hq10
+        axi_read(16'h005C, axi_rdata); // hq11
+        axi_read(16'h0060, axi_rdata); // hq12
+        axi_read(16'h0064, axi_rdata); // hq13
+        axi_read(16'h0068, axi_rdata); // hq14
+
         #100;
 
         // axi write coeffs
