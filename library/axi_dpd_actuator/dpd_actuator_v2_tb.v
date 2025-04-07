@@ -19,6 +19,7 @@ module dpd_actuator_v2_tb;
     wire                        tx_valid;
 
     // configuration port
+    reg     [1:0]               lut_sel;
     reg                         enc;
     reg     [ID_MAX-1:0]        lutIdc;
     reg                         wec;
@@ -94,6 +95,8 @@ endtask
     initial begin
         // free luts
         free_lut;
+        lut_sel = 2'b00;
+
         wait(rst_n == 1);
         #100;
         // select lut-0
@@ -137,6 +140,7 @@ endtask
         .tx_valid(tx_valid),
 
         // configuration
+        .lut_sel(lut_sel),
         .enc(enc),
         .lutIdc(lutIdc),
         .wec(wec),

@@ -29,6 +29,7 @@ module dpd_luts_row_v2 #(
     output  [DATA_WIDTH-1+`EXTRA_BITS*2:0] hout_even,
 
     //configration port
+    input   [1:0]               lut_sel,
     input                       enc,
     input   [I_DELAY_MAX-1:0]   lutIdc,
     input                       wec,
@@ -202,6 +203,7 @@ module dpd_luts_row_v2 #(
                 //configration port, read and write
                 .clk(clk),
                 .rst_n(rst_n),
+                .lut_sel(lut_sel),
                 .enc(enc & lutIdc[i_delay]),
                 .wec(wec),
                 .addrc(addrc),

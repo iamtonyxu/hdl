@@ -280,6 +280,9 @@ module axi_dpd_actuator_v2_tb;
         // dpd_LutIdc_h
         axi_write(16'h0018, 32'h0000_0000);
         #100;
+        // dpd_lut_sel
+        axi_write(16'h001C, 32'h0000_0000);
+        #100;
 
         // read internal registers
         // ip version
@@ -303,6 +306,9 @@ module axi_dpd_actuator_v2_tb;
         // dpd_LutIdc_h
         axi_read(16'h0018, axi_rdata);
         //#100;
+        // dpd_lut_sel
+        axi_read(16'h001C, axi_rdata);
+        #100;
 
         // read files about dpd actuator luts
         $readmemh("../src/dpd_luts.txt", mem_luts);
