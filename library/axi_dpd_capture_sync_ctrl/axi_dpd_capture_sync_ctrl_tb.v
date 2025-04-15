@@ -1,10 +1,9 @@
 `timescale 1ns/100ps
 
-module axi_dpd_capture_tb;
+module axi_dpd_capture_sync_ctrl_tb;
 
     localparam DCLK_PERIOD = 10; // dpd_actuator clock = 122.88/245.76 MHz
     localparam ACLK_PERIOD = 4; //s_axi_aclk = 100 MHz
-    localparam CAP_DEPTH = 12;
 
     // signal in/out
     reg                           data_clk;
@@ -12,8 +11,8 @@ module axi_dpd_capture_tb;
     reg   [31:0]                  data_in_0;
     reg   [31:0]                  data_in_1;
     
-    reg                           cap_trigger;
-    wire                          cap_done;
+    wire                          cap_trigger;
+    reg   [2:0]                   cap_done;
 
     // axi interface
     reg                           s_axi_aclk;
@@ -40,9 +39,8 @@ module axi_dpd_capture_tb;
     wire  [31:0]                  s_axi_rdata;
     reg                           s_axi_rready;
 
-    reg [31:0] cap_buffer[0:2**CAP_DEPTH-1];
-    integer i;
     reg [31:0] cap_status;
+    integer ii = 0;
 
     // axi_write
     task axi_write;
@@ -129,90 +127,40 @@ module axi_dpd_capture_tb;
 
     // sim process
     initial begin
-        cap_trigger = 0;
-
-        // reset cap_buffer
-        for(i = 0; i < 2**CAP_DEPTH; i=i+1) begin
-            cap_buffer[i] = 0;
-        end
-        #1000;
-
-        axi_write(16'h8000, 1); // select sw trigger
-
-        // gpio trigger capture
-        @(posedge s_axi_aclk);
-        cap_trigger = 1;
-        @(posedge s_axi_aclk);
-        cap_trigger = 0;
-
-        #1000;
-        axi_write(16'h8000, 3); // select sw and trigger a capture
-
-        // wait capture done
-        wait(cap_done == 1);
+        // wait for a moment
         #100;
-        // read capture status register
-        cap_status = 0;
-        axi_read(16'h8004, cap_status);
-        #(ACLK_PERIOD);
-        // clear cap_status and set gpio trigger mode
-        axi_write(16'h8000, 4);
-        #1000;
 
-        // gpio trigger capture
-        @(posedge s_axi_aclk);
-        cap_trigger = 1;
-        @(posedge s_axi_aclk);
-        cap_trigger = 0;
-        
-        for(i = 0; i < 5; i = i + 1) begin
-            #100;
-            // gpio trigger capture, should be ignored!
-            @(posedge s_axi_aclk);
-            cap_trigger = 1;
-            @(posedge s_axi_aclk);
-            cap_trigger = 0;
+        axi_write(16'h0000, 2'b11); // cap_control[1:0] = 2'b11, trigger a capture
+
+        // check capture trigger is valid
+        wait(cap_trigger == 1);
+
+        ii = 0;
+        repeat(8) begin
+        // set cap_done
+        cap_done = ii;
+        #(3 * DCLK_PERIOD); // wait for 3 clock cycles
+        axi_read(16'h0004, cap_status); // read capture status register
+        if (cap_status[2:0] == ii) begin
+            $display("Capture status = %d", cap_status[2:0]);
         end
-
-        // wait capture done
-        wait(cap_done == 1);
-        #1000;
-        
-        // read capture status register
-        cap_status = 0;
-        axi_read(16'h8004, cap_status);
-        #(ACLK_PERIOD);
-
-        // read capture data
-        for(i = 0; i < 2**CAP_DEPTH; i=i+1) begin
-            axi_read(i*4, cap_buffer[i]);
+        else begin
+            $display("Capture status error, cap_status = %d", cap_status[2:0]);
+        end
+        ii = ii + 1;
         end
         $stop;
     end
 
-    // data_in_0, data_in_1
-    always@(posedge data_clk or negedge data_rstn)
-        if(~data_rstn) begin
-            data_in_0 <= 32'h1111_1111;
-            data_in_1 <= 32'h2222_2222;
-        end
-        else begin
-            data_in_0 <= data_in_0 + 1;
-            data_in_1 <= data_in_1 + 1;
-        end
-
-    axi_dpd_capture #(
-        .CAP_DEPTH(CAP_DEPTH) 
-    )
+    axi_dpd_capture_sync_ctrl
     dut (
         .data_clk(data_clk),
         .data_rstn(data_rstn),
-        .data_in_0(data_in_0),
-        .data_in_1(data_in_1),
-
-    // capture trigger and done signal
+        .ext_trigger(1'b0), 
         .cap_trigger(cap_trigger),
-        .cap_done(cap_done),
+        .cap_done_0(cap_done[0]),
+        .cap_done_1(cap_done[1]),
+        .cap_done_2(cap_done[2]),
 
         // axis interface
         .s_axi_aclk(s_axi_aclk),

@@ -1,23 +1,20 @@
 `timescale 1ns / 100ps
 /*
-* this module is used to capture tu/tx
+* this module is used to sync multi-capture tu/tx/orx
 */
 
-module axi_dpd_capture #(
-    parameter CAP_DEPTH = 12
-)
+module axi_dpd_capture_sync_ctrl
 (
-    // signal from pre or post DPD, two samples per channel
-    // data_in_0 = {tu_i[2n+1],tu_i[2n]}
-    // data_in_1 = {tu_q[2n+1],tu_q[2n]}
+    // interface to dpd_capture
     input                           data_clk,
     input                           data_rstn,
-    input   [31:0]                  data_in_0,
-    input   [31:0]                  data_in_1,
+    input                           ext_trigger,
 
     // capture trigger and done signal, according to s_axi_aclk
-    input                           cap_trigger,
-    output                          cap_done,
+    output                           cap_trigger,
+    input                            cap_done_0,
+    input                            cap_done_1,
+    input                            cap_done_2,
 
     // axis interface
     input                           s_axi_aclk,
@@ -47,32 +44,20 @@ module axi_dpd_capture #(
 
     localparam UP_ADDR_WIDTH = 14; // 16 - 2
     localparam UP_DATA_WIDTH = 32;
-    
+
+    // mem          addr_start  addr_end    width   default
+    // cap_control  14'h0000    14'h0000    32      0
+    // cap_status   14'h0001    14'h0001    32      0
+
     // internal register
-    // cap_status = 0, idle
-    // cap_status = 1, capture ongoing after new trigger signal arrives
-    // cap_status = 2, capture done after the last trigger
-    reg [1:0]          cap_status;
-    reg [15:0]         cap_count;
-    wire               cap_trigger_d;
-
-    // afifo
-    wire tfifo_wr, tfifo_rd, tfifo_wfull, tfifo_rempty;
-
-    // cap_mem
-    // ram[0]: {data_in_0[15:0], data_in_1[15:0]}
-    // ram[1]: {data_in_0[31:16], data_in_1[31:15]}
-    //...
-    // ram[2n]: {data_in_0[15:0], data_in_1[15:0]}
-    // ram[2n+1]: {data_in_0[31:16], data_in_1[31:16]}
-    (* rom_style="{distributed | block}" *)
-    reg  [63:0]                 ram[0:2**(CAP_DEPTH-1)-1];
-    wire                        wea;
-    wire [CAP_DEPTH-2:0]        waddr;
-    wire [63:0]                 wdata;
-    wire [CAP_DEPTH-2:0]        raddr;
-    wire [63:0]                 rdata;
-
+    // cap_control[0]: trigger mode, 1: internal trigger, 0: external gpio trigger (rising edge)
+    // cap_control[1]: internal trigger, rising edge is valid, 1 write self clear
+    // cap_control[31:2]: reserved
+    reg   [31:0]                cap_control;
+    // cap_status[0] = 1'b1, tu capture done, otherwise, not finished.
+    // cap_status[1] = 1'b1, tx capture done, otherwise, not finished.
+    // cap_status[2] = 1'b1, orx capture done, otherwise, not finished.
+    reg   [31:0]                cap_status;
 
     // up_axi interface
     wire                        up_clk;
@@ -87,17 +72,8 @@ module axi_dpd_capture #(
     reg                         up_rack_s;
     reg                         up_rreq_s_d1;
 
-    // internal registers
-    // cap_control[0]: trigger mode, 1: internal trigger, 0: gpio trigger (rising edge)
-    // cap_control[1]: internal trigger, rising edge is valid, 1 write self clear
-    // cap_control[2]: reset cap_status, 1 write self clear, reserved
-    // cap_control[31:8]: delay capture after triggering, reserved
-    reg   [31:0]                cap_control;
-
-    // mem          addr_start  addr_end    width   default
-    // cap_ram      14'h0000    14'h1fff    32      0
-    // cap_control  14'h2000    14'h2000    32      0
-
+    // afifo: signal cross different clock domains
+    wire tfifo_wr, tfifo_rd, tfifo_wfull, tfifo_rempty;
     afifo #(
     .DSIZE(8),
     .ASIZE(8)
@@ -115,57 +91,18 @@ module axi_dpd_capture #(
         .o_rempty(tfifo_rempty)
     );
 
-    assign tfifo_wr = cap_control[0] ? cap_control[1] : cap_trigger;
+    assign tfifo_wr = cap_control[0] ? cap_control[1] : ext_trigger;
     assign tfifo_rd = ~tfifo_rempty;
-    assign cap_trigger_d = ~tfifo_rempty;
+    assign cap_trigger = ~tfifo_rempty;
 
     // cap_status
     always@(posedge data_clk or negedge data_rstn)
         if(~data_rstn)
-            cap_status <= 2'd0;
+            cap_status <= 0;
         else begin
-            if(cap_trigger_d)
-                cap_status <= 2'd1;
-            else if(cap_count == 2**(CAP_DEPTH-1) - 1)
-                cap_status <= 2'd2;
+            cap_status[2:0] <= {cap_done_2, cap_done_1, cap_done_0};
         end
 
-    // cap_done
-    assign cap_done = cap_status[1];
-
-    // cap_count
-    always@(posedge data_clk or negedge data_rstn)
-        if(~data_rstn)
-            cap_count <= 0;
-        else begin
-            if(cap_status == 2'd1)
-                cap_count <= cap_count + 1;
-            else
-                cap_count <= 0;
-        end
-    
-    assign waddr = cap_count[CAP_DEPTH-2:0];
-    assign wea = cap_status == (2'd1);
-    assign wdata = {data_in_0, data_in_1};
-
-    ///////////////////////
-    // only for simulation
-    integer i;
-    initial begin
-        for(i=0; i<2**(CAP_DEPTH-1); i=i+1) begin
-            ram[i] = 0;
-        end
-    end
-    ///////////////////////
-
-    // ram write
-    always@(posedge data_clk)
-        if(wea)
-            ram[waddr] <= wdata;
-
-    // ram read
-    assign rdata = ram[raddr];
-    assign raddr = up_raddr_s[CAP_DEPTH-1:1];
 
     // up_axi
     assign up_clk = s_axi_aclk;
@@ -217,8 +154,8 @@ module axi_dpd_capture #(
         cap_control <= 0;
     end
     else begin
-        if(up_wreq_s && up_waddr_s[13]) begin
-            if(up_waddr_s[7:0] == 0) begin
+        if(up_wreq_s) begin
+            if(up_waddr_s[13:0] == 0) begin
                 cap_control <= up_wdata_s;
             end
         end
@@ -226,10 +163,6 @@ module axi_dpd_capture #(
             // internal trigger, rising edge is valid, 1 write self-clear
             if(cap_control[1]) begin
                 cap_control[1] <= 1'b0;
-            end
-            // reset cap_status, 1 write self-clear
-            if(cap_control[2]) begin
-                cap_control[2] <= 1'b0;
             end
         end
     end
@@ -250,19 +183,14 @@ module axi_dpd_capture #(
         else begin
             if (up_rreq_s_d1) begin
                 up_rack_s <= 1;
-                if(up_raddr_s[13]) begin
-                    if(up_raddr_s[7:0]==8'd0)
-                        up_rdata_s <= cap_control;
-                    else if(up_raddr_s[7:0]==8'd1)
-                        up_rdata_s <= cap_status[1] ? 32'd1 : 32'd0;
-                    else
-                        up_rdata_s <= 32'd0;
+                if(up_raddr_s[13:0]==14'd0) begin
+                    up_rdata_s <= cap_control;
+                end
+                else if(up_raddr_s[13:0]==14'd1) begin
+                    up_rdata_s <= cap_status;
                 end
                 else begin
-                if(up_raddr_s[0])
-                    up_rdata_s <= rdata[31:0];
-                else
-                    up_rdata_s <= rdata[63:32];
+                    up_rdata_s <= 32'd0;
                 end
             end
             else begin
