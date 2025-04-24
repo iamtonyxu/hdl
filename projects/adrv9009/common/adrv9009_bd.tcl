@@ -270,19 +270,20 @@ ad_connect axi_adrv9009_tx_clkgen/clk_0 axi_dpd_actuator_0/data_clk
 ad_connect $sys_cpu_resetn axi_dpd_actuator_0/data_rstn
 ad_connect axi_dpd_actuator_0/data_in_enable_0 util_luts_addr_gen_0/data_out_valid
 
+# Dpd capture sync ctrl
+ad_ip_instance axi_dpd_capture_sync_ctrl axi_dpd_capture_sync_ctrl_0
+ad_connect axi_adrv9009_tx_clkgen/clk_0 axi_dpd_capture_sync_ctrl_0/data_clk
+ad_connect $sys_cpu_resetn axi_dpd_capture_sync_ctrl_0/data_rstn
+ad_connect axi_dpd_capture_sync_ctrl_0/ext_trigger VCC
+
 # Dpd capture (preDPD)
 ad_ip_instance axi_dpd_capture axi_dpd_capture_0
 ad_connect axi_adrv9009_tx_clkgen/clk_0 axi_dpd_capture_0/data_clk
 ad_connect $sys_cpu_resetn axi_dpd_capture_0/data_rstn
 ad_connect util_luts_addr_gen_0/data_out_0 axi_dpd_capture_0/data_in_0
 ad_connect util_luts_addr_gen_0/data_out_1 axi_dpd_capture_0/data_in_1
-
-ad_ip_instance util_vector_logic logic_or1 [list \
-C_OPERATION {or} \
-C_SIZE 1]
-ad_connect  logic_or1/Op1  axi_adrv9009_rx_dma/irq
-ad_connect  logic_or1/Op2  axi_adrv9009_rx_os_dma/irq
-ad_connect  logic_or1/Res  axi_dpd_capture_0/cap_trigger
+ad_connect axi_dpd_capture_sync_ctrl_0/cap_trigger axi_dpd_capture_0/cap_trigger
+ad_connect axi_dpd_capture_sync_ctrl_0/cap_done_0 axi_dpd_capture_0/cap_done
 
 # Dpd capture (postDPD)
 ad_ip_instance axi_dpd_capture axi_dpd_capture_1
@@ -290,7 +291,8 @@ ad_connect axi_adrv9009_tx_clkgen/clk_0 axi_dpd_capture_1/data_clk
 ad_connect $sys_cpu_resetn axi_dpd_capture_1/data_rstn
 ad_connect axi_dpd_actuator_0/data_out_0 axi_dpd_capture_1/data_in_0
 ad_connect axi_dpd_actuator_0/data_out_1 axi_dpd_capture_1/data_in_1
-ad_connect logic_or1/Res axi_dpd_capture_1/cap_trigger
+ad_connect axi_dpd_capture_sync_ctrl_0/cap_trigger axi_dpd_capture_1/cap_trigger
+ad_connect axi_dpd_capture_sync_ctrl_0/cap_done_1 axi_dpd_capture_1/cap_done
 
 # Rx
 if {$RX_NUM_OF_LANES == 2} {
@@ -356,7 +358,8 @@ ad_connect adrv9009_rx_os_device_clk axi_dpd_capture_2/data_clk
 ad_connect $sys_cpu_resetn axi_dpd_capture_2/data_rstn
 ad_connect rx_os_adrv9009_tpl_core/adc_data_0 axi_dpd_capture_2/data_in_0
 ad_connect rx_os_adrv9009_tpl_core/adc_data_1 axi_dpd_capture_2/data_in_1
-ad_connect logic_or1/Res axi_dpd_capture_2/cap_trigger
+ad_connect axi_dpd_capture_sync_ctrl_0/cap_trigger axi_dpd_capture_2/cap_trigger
+ad_connect axi_dpd_capture_sync_ctrl_0/cap_done_2 axi_dpd_capture_2/cap_done
 
 ad_connect ref_clk axi_adrv9009_rx_os_clkgen/clk
 for {set i 0} {$i < $MAX_RX_OS_NUM_OF_LANES} {incr i} {
@@ -510,8 +513,9 @@ ad_cpu_interconnect 0x44AB0000 axi_adrv9009_rx_os_jesd
 ad_cpu_interconnect 0x7c440000 axi_adrv9009_rx_os_dma
 ad_cpu_interconnect 0x46000000 axi_dpd_actuator_0
 ad_cpu_interconnect 0x46100000 axi_dpd_capture_0
-ad_cpu_interconnect 0x46200000 axi_dpd_capture_1
-ad_cpu_interconnect 0x46280000 axi_dpd_capture_2
+ad_cpu_interconnect 0x46180000 axi_dpd_capture_1
+ad_cpu_interconnect 0x46200000 axi_dpd_capture_2
+ad_cpu_interconnect 0x46280000 axi_dpd_capture_sync_ctrl_0
 ad_cpu_interconnect 0x46300000 axi_dpd_waveform_0
 ad_cpu_interconnect 0x46400000 axi_dpd_waveform_1
 

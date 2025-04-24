@@ -40,6 +40,7 @@ LIB_DEPS += xilinx/util_adxcvr
 LIB_DEPS += axi_dpd_actuator
 LIB_DEPS += util_luts_addr_gen
 LIB_DEPS += axi_dpd_capture
+LIB_DEPS += axi_dpd_capture_sync_ctrl
 LIB_DEPS += axi_dpd_waveform
 
 include ../../scripts/project-xilinx.mk
