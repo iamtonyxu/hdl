@@ -38,7 +38,7 @@
 module ad_data_in #(
   parameter   SINGLE_ENDED = 0,
   parameter   FPGA_TECHNOLOGY = 0,
-  parameter   IDDR_CLK_EDGE ="OPPOSITE_EDGE",
+  parameter   IDDR_CLK_EDGE ="SAME_EDGE",
   // for 7 series devices
   parameter   IDELAY_TYPE = "VAR_LOAD",
   // for ultrascale devices
