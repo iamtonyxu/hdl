@@ -1,0 +1,90 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company:
+// Engineer: iamtony
+//
+// Create Date: 2026/04/29
+// Design Name:
+// Module Name: util_tx_data_pack
+// Project Name:
+// Target Devices:
+// Tool Versions:
+// Description: Top-level wrapper for sample generation and mapping.
+//
+// Dependencies: tx_data_source, tx_data_mapper.
+//
+// Revision:
+// Revision 0.02 - Header refreshed.
+// Additional Comments:
+// Keeps source selection separate from JESD packing.
+//////////////////////////////////////////////////////////////////////////////////
+
+module util_tx_data_pack (
+    input  wire         clk,
+    input  wire         rstn,
+
+    // interface to axi_tx_config
+    input  wire         dds_sync,
+    input  wire [15:0]  tone_1_scale,
+    input  wire [15:0]  tone_1_freq_word,
+    input  wire [15:0]  tone_2_scale,
+    input  wire [15:0]  tone_2_freq_word,
+    input  wire [31:0]  const_data_0,
+    input  wire [31:0]  const_data_1,
+    input  wire [1:0]   src_sel,
+
+    // interface to axi4_stream_afifo
+    input  wire [63:0]  afifo_ddr_data,
+    input  wire         afifo_ddr_tvalid,
+
+    // interface to jesd tx
+    output wire [127:0] tx_tdata
+);
+
+    wire [15:0] ch1_sample0_i;
+    wire [15:0] ch1_sample1_i;
+    wire [15:0] ch1_sample0_q;
+    wire [15:0] ch1_sample1_q;
+    wire [15:0] ch2_sample0_i;
+    wire [15:0] ch2_sample1_i;
+    wire [15:0] ch2_sample0_q;
+    wire [15:0] ch2_sample1_q;
+
+tx_data_source i_tx_data_source (
+    .rstn             (rstn),
+    .clk              (clk),
+    .dds_sync         (dds_sync),
+    .tone_1_scale     (tone_1_scale),
+    .tone_1_freq_word (tone_1_freq_word),
+    .tone_2_scale     (tone_2_scale),
+    .tone_2_freq_word (tone_2_freq_word),
+    .const_data_0     (const_data_0),
+    .const_data_1     (const_data_1),
+    .ddr_data         (afifo_ddr_data),
+    .ddr_tvalid       (afifo_ddr_tvalid),
+    .src_sel          (src_sel),
+    .ch1_sample0_i    (ch1_sample0_i),
+    .ch1_sample1_i    (ch1_sample1_i),
+    .ch1_sample0_q    (ch1_sample0_q),
+    .ch1_sample1_q    (ch1_sample1_q),
+    .ch2_sample0_i    (ch2_sample0_i),
+    .ch2_sample1_i    (ch2_sample1_i),
+    .ch2_sample0_q    (ch2_sample0_q),
+    .ch2_sample1_q    (ch2_sample1_q)
+);
+
+tx_data_mapper i_tx_data_mapper (
+    .clk           (clk),
+    .sel           (src_sel[0]),
+    .ch1_sample0_i (ch1_sample0_i),
+    .ch1_sample1_i (ch1_sample1_i),
+    .ch1_sample0_q (ch1_sample0_q),
+    .ch1_sample1_q (ch1_sample1_q),
+    .ch2_sample0_i (ch2_sample0_i),
+    .ch2_sample1_i (ch2_sample1_i),
+    .ch2_sample0_q (ch2_sample0_q),
+    .ch2_sample1_q (ch2_sample1_q),
+    .tx_tdata      (tx_tdata)
+);
+
+endmodule
