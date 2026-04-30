@@ -4,12 +4,12 @@
 ## Auto-generated, do not modify!
 ####################################################################################
 
-LIBRARY_NAME := axi_tx_config
+LIBRARY_NAME := axi_fr9009_config
 
 GENERIC_DEPS += ../common/up_axi.v
-GENERIC_DEPS += axi_tx_config.v
+GENERIC_DEPS += axi_fr9009_config.v
 GENERIC_DEPS += data2fpga.v
 
-XILINX_DEPS += axi_tx_config_ip.tcl
+XILINX_DEPS += axi_fr9009_config_ip.tcl
 
 include ../scripts/library.mk

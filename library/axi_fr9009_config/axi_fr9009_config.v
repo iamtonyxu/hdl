@@ -6,7 +6,7 @@
 //
 // Create Date: 2026/04/29
 // Design Name:
-// Module Name: axi_tx_config
+// Module Name: axi_fr9009_config
 // Project Name:
 // Target Devices:
 // Tool Versions:
@@ -20,7 +20,7 @@
 // Register space includes source select, DDR playback, constants, and DDS tones.
 //////////////////////////////////////////////////////////////////////////////////
 
-module axi_tx_config (
+module axi_fr9009_config (
   // AXI-Lite interface
   input                           s_axi_aclk,
   input                           s_axi_aresetn,
@@ -67,7 +67,10 @@ module axi_tx_config (
     output  [15:0]                  tone_2_freq_word_o,
 
     // Interface to tx_data_mapper
-    output                          frame_mapper_sel_o
+    output                          frame_mapper_sel_o,
+
+    // Interface to rx_data_capture
+    output  [31:0]                  rx_cap_config_o
 );
 
     localparam UP_ADDR_WIDTH = 14; // 16 - 2
@@ -85,6 +88,7 @@ module axi_tx_config (
     reg   [15:0]               tone_1_freq_word;
     reg   [15:0]               tone_2_scale;
     reg   [15:0]               tone_2_freq_word;
+    reg   [31:0]               rx_cap_config;
 
     // Outputs toward tx_data_source
     assign src_sel_o         = src_sel;
@@ -95,6 +99,7 @@ module axi_tx_config (
     assign tone_1_freq_word_o = tone_1_freq_word;
     assign tone_2_scale_o    = tone_2_scale;
     assign tone_2_freq_word_o = tone_2_freq_word;
+    assign rx_cap_config_o   = rx_cap_config;
 
     // Output toward tx_data_mapper
     assign frame_mapper_sel_o = mapper_sel;
@@ -209,6 +214,9 @@ module axi_tx_config (
             if ((up_wreq_s == 1'b1) && (up_waddr_s == 14'h0a)) begin
                 tone_2_freq_word <= up_wdata_s[15:0];
             end
+            if ((up_wreq_s == 1'b1) && (up_waddr_s == 14'h10)) begin
+                rx_cap_config <= up_wdata_s;
+            end
         end
     end
 
@@ -240,6 +248,7 @@ module axi_tx_config (
                     14'h08: up_rdata_s <= {16'd0, tone_1_freq_word};
                     14'h09: up_rdata_s <= {16'd0, tone_2_scale};
                     14'h0a: up_rdata_s <= {16'd0, tone_2_freq_word};
+                    14'h10: up_rdata_s <= rx_cap_config;
                     default: up_rdata_s <= 32'd0;
                 endcase
             end else begin

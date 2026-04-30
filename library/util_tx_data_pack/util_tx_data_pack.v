@@ -23,15 +23,16 @@ module util_tx_data_pack (
     input  wire         clk,
     input  wire         rstn,
 
-    // interface to axi_tx_config
+    // interface to axi_fr9009_config
+    input  wire [1:0]   src_sel,
+    input  wire [31:0]  const_data_0,
+    input  wire [31:0]  const_data_1,
     input  wire         dds_sync,
     input  wire [15:0]  tone_1_scale,
     input  wire [15:0]  tone_1_freq_word,
     input  wire [15:0]  tone_2_scale,
     input  wire [15:0]  tone_2_freq_word,
-    input  wire [31:0]  const_data_0,
-    input  wire [31:0]  const_data_1,
-    input  wire [1:0]   src_sel,
+    input  wire         frame_mapper_sel,
 
     // interface to axi4_stream_afifo
     input  wire [63:0]  afifo_ddr_data,
@@ -75,7 +76,7 @@ tx_data_source i_tx_data_source (
 
 tx_data_mapper i_tx_data_mapper (
     .clk           (clk),
-    .sel           (src_sel[0]),
+    .sel           (frame_mapper_sel),
     .ch1_sample0_i (ch1_sample0_i),
     .ch1_sample1_i (ch1_sample1_i),
     .ch1_sample0_q (ch1_sample0_q),
