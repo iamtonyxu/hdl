@@ -88,7 +88,7 @@ clean:
 
 clean-all: clean
 	@for lib in $(LIB_DEPS); do \
-		$(MAKE) -C $(HDL_LIBRARY_PATH)$${lib} clean; \
+		"$(MAKE)" -C "$(HDL_LIBRARY_PATH)$${lib}" clean; \
 	done
 	@for dir in ${CLEAN_DIRS}; do \
 		rm -Rf $${dir}; \
@@ -117,9 +117,9 @@ $(PROJECT_NAME).sdk/system_top.xsa: $(M_DEPS)
 lib:
 	@for lib in $(LIB_DEPS); do \
 		if [ -n "${REQUIRED_VIVADO_VERSION}" ]; then \
-			$(MAKE) -C $(HDL_LIBRARY_PATH)$${lib} xilinx REQUIRED_VIVADO_VERSION=${REQUIRED_VIVADO_VERSION} || exit $$?; \
+			"$(MAKE)" -C "$(HDL_LIBRARY_PATH)$${lib}" xilinx REQUIRED_VIVADO_VERSION=${REQUIRED_VIVADO_VERSION} || exit $$?; \
 		else \
-			$(MAKE) -C $(HDL_LIBRARY_PATH)$${lib} xilinx || exit $$?; \
+			"$(MAKE)" -C "$(HDL_LIBRARY_PATH)$${lib}" xilinx || exit $$?; \
 		fi; \
 	done
 
