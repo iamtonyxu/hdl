@@ -60,11 +60,11 @@ module axi_fr9009_config (
     output  [1:0]                   src_sel_o,
     output  [31:0]                  const_data_0_o,
     output  [31:0]                  const_data_1_o,
-    output                          dds_sync_o,
-    output  [15:0]                  tone_1_scale_o,
-    output  [15:0]                  tone_1_freq_word_o,
-    output  [15:0]                  tone_2_scale_o,
-    output  [15:0]                  tone_2_freq_word_o,
+    output  [1:0]                   dds_ctrl_o,
+    output  [31:0]                  dds_pinc_0_o,
+    output  [31:0]                  dds_poff_0_o,
+    output  [31:0]                  dds_pinc_1_o,
+    output  [31:0]                  dds_poff_1_o,
 
     // Interface to tx_data_mapper
     output                          frame_mapper_sel_o,
@@ -83,22 +83,22 @@ module axi_fr9009_config (
     reg   [31:0]               ddr_play_length;
     reg   [31:0]               const_data_0;
     reg   [31:0]               const_data_1;
-    reg                        dds_sync;
-    reg   [15:0]               tone_1_scale;
-    reg   [15:0]               tone_1_freq_word;
-    reg   [15:0]               tone_2_scale;
-    reg   [15:0]               tone_2_freq_word;
+    reg   [1:0]                dds_ctrl;
+    reg   [31:0]               dds_pinc_0;
+    reg   [31:0]               dds_poff_0;
+    reg   [31:0]               dds_pinc_1;
+    reg   [31:0]               dds_poff_1;
     reg   [31:0]               rx_cap_config;
 
     // Outputs toward tx_data_source
     assign src_sel_o         = src_sel;
     assign const_data_0_o    = const_data_0;
     assign const_data_1_o    = const_data_1;
-    assign dds_sync_o        = dds_sync;
-    assign tone_1_scale_o    = tone_1_scale;
-    assign tone_1_freq_word_o = tone_1_freq_word;
-    assign tone_2_scale_o    = tone_2_scale;
-    assign tone_2_freq_word_o = tone_2_freq_word;
+    assign dds_ctrl_o        = dds_ctrl;
+    assign dds_pinc_0_o      = dds_pinc_0;
+    assign dds_poff_0_o      = dds_poff_0;
+    assign dds_pinc_1_o      = dds_pinc_1;
+    assign dds_poff_1_o      = dds_poff_1;
     assign rx_cap_config_o   = rx_cap_config;
 
     // Output toward tx_data_mapper
@@ -175,11 +175,12 @@ module axi_fr9009_config (
             ddr_play_length  <= 32'd0;
             const_data_0     <= 32'd0;
             const_data_1     <= 32'd0;
-            dds_sync         <= 1'b0;
-            tone_1_scale     <= 16'd0;
-            tone_1_freq_word <= 16'd0;
-            tone_2_scale     <= 16'd0;
-            tone_2_freq_word <= 16'd0;
+            dds_ctrl         <= 2'd0;
+            dds_pinc_0       <= 32'd0;
+            dds_poff_0       <= 32'd0;
+            dds_pinc_1       <= 32'd0;
+            dds_poff_1       <= 32'd0;
+            rx_cap_config    <= 32'd0;
         end else begin
             if ((up_wreq_s == 1'b1) && (up_waddr_s == 14'h00)) begin
                 src_sel <= up_wdata_s[1:0];
@@ -200,19 +201,19 @@ module axi_fr9009_config (
                 const_data_1 <= up_wdata_s;
             end
             if ((up_wreq_s == 1'b1) && (up_waddr_s == 14'h06)) begin
-                dds_sync <= up_wdata_s[0];
+                dds_ctrl <= up_wdata_s[1:0];
             end
             if ((up_wreq_s == 1'b1) && (up_waddr_s == 14'h07)) begin
-                tone_1_scale <= up_wdata_s[15:0];
+                dds_pinc_0 <= up_wdata_s;
             end
             if ((up_wreq_s == 1'b1) && (up_waddr_s == 14'h08)) begin
-                tone_1_freq_word <= up_wdata_s[15:0];
+                dds_poff_0 <= up_wdata_s;
             end
             if ((up_wreq_s == 1'b1) && (up_waddr_s == 14'h09)) begin
-                tone_2_scale <= up_wdata_s[15:0];
+                dds_pinc_1 <= up_wdata_s;
             end
             if ((up_wreq_s == 1'b1) && (up_waddr_s == 14'h0a)) begin
-                tone_2_freq_word <= up_wdata_s[15:0];
+                dds_poff_1 <= up_wdata_s;
             end
             if ((up_wreq_s == 1'b1) && (up_waddr_s == 14'h10)) begin
                 rx_cap_config <= up_wdata_s;
@@ -243,11 +244,11 @@ module axi_fr9009_config (
                     14'h03: up_rdata_s <= ddr_play_length;
                     14'h04: up_rdata_s <= const_data_0;
                     14'h05: up_rdata_s <= const_data_1;
-                    14'h06: up_rdata_s <= {31'd0, dds_sync};
-                    14'h07: up_rdata_s <= {16'd0, tone_1_scale};
-                    14'h08: up_rdata_s <= {16'd0, tone_1_freq_word};
-                    14'h09: up_rdata_s <= {16'd0, tone_2_scale};
-                    14'h0a: up_rdata_s <= {16'd0, tone_2_freq_word};
+                    14'h06: up_rdata_s <= {30'd0, dds_ctrl};
+                    14'h07: up_rdata_s <= dds_pinc_0;
+                    14'h08: up_rdata_s <= dds_poff_0;
+                    14'h09: up_rdata_s <= dds_pinc_1;
+                    14'h0a: up_rdata_s <= dds_poff_1;
                     14'h10: up_rdata_s <= rx_cap_config;
                     default: up_rdata_s <= 32'd0;
                 endcase

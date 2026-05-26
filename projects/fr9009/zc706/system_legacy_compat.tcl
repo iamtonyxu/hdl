@@ -137,6 +137,7 @@ analog.com:user:util_rx_data_capture:1.0\
 analog.com:user:util_tx_data_pack:1.0\
 xilinx.com:ip:jesd204_phy:4.0\
 xilinx.com:ip:jesd204:7.2\
+xilinx.com:ip:ila:6.2\
 xilinx.com:ip:system_ila:1.1\
 "
 
@@ -467,6 +468,20 @@ proc create_root_design { parentCell } {
     CONFIG.IS_ACLK_ASYNC {1} \
     CONFIG.TDATA_NUM_BYTES {8} \
   ] $axis_data_fifo_0
+
+
+   # Create instance: ila_0, and set properties
+   set ila_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:ila:6.2 ila_0 ]
+   set_property -dict [list \
+      CONFIG.C_DATA_DEPTH {8192} \
+      CONFIG.C_ENABLE_ILA_AXI_MON {false} \
+      CONFIG.C_MONITOR_TYPE {Native} \
+      CONFIG.C_NUM_OF_PROBES {8} \
+      CONFIG.C_PROBE5_TYPE {1} \
+      CONFIG.C_PROBE5_WIDTH {128} \
+      CONFIG.C_PROBE6_WIDTH {4} \
+      CONFIG.C_PROBE7_WIDTH {4} \
+   ] $ila_0
 
 
   # Create instance: blk_mem_gen_0, and set properties
@@ -1116,7 +1131,11 @@ Flash#Quad SPI Flash#Quad SPI Flash#SD 0#SD 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0
   connect_bd_net -net axi_datamover_0_s_axis_mm2s_cmd_tready [get_bd_pins axi_datamover_0/s_axis_mm2s_cmd_tready] [get_bd_pins axi_fr9009_config_0/s_axis_mm2s_cmd_tready]
   connect_bd_net -net axi_fr9009_config_0_const_data_0_o [get_bd_pins axi_fr9009_config_0/const_data_0_o] [get_bd_pins util_tx_data_pack_0/const_data_0]
   connect_bd_net -net axi_fr9009_config_0_const_data_1_o [get_bd_pins axi_fr9009_config_0/const_data_1_o] [get_bd_pins util_tx_data_pack_0/const_data_1]
-  connect_bd_net -net axi_fr9009_config_0_dds_sync_o [get_bd_pins axi_fr9009_config_0/dds_sync_o] [get_bd_pins util_tx_data_pack_0/dds_sync]
+   connect_bd_net -net axi_fr9009_config_0_dds_ctrl_o [get_bd_pins axi_fr9009_config_0/dds_ctrl_o] [get_bd_pins util_tx_data_pack_0/dds_ctrl]
+   connect_bd_net -net axi_fr9009_config_0_dds_pinc_0_o [get_bd_pins axi_fr9009_config_0/dds_pinc_0_o] [get_bd_pins util_tx_data_pack_0/dds_pinc_0]
+   connect_bd_net -net axi_fr9009_config_0_dds_poff_0_o [get_bd_pins axi_fr9009_config_0/dds_poff_0_o] [get_bd_pins util_tx_data_pack_0/dds_poff_0]
+   connect_bd_net -net axi_fr9009_config_0_dds_pinc_1_o [get_bd_pins axi_fr9009_config_0/dds_pinc_1_o] [get_bd_pins util_tx_data_pack_0/dds_pinc_1]
+   connect_bd_net -net axi_fr9009_config_0_dds_poff_1_o [get_bd_pins axi_fr9009_config_0/dds_poff_1_o] [get_bd_pins util_tx_data_pack_0/dds_poff_1]
   connect_bd_net -net axi_fr9009_config_0_frame_mapper_sel_o [get_bd_pins axi_fr9009_config_0/frame_mapper_sel_o] [get_bd_pins util_tx_data_pack_0/frame_mapper_sel]
   connect_bd_net -net axi_fr9009_config_0_m_axis_afifo_tready [get_bd_pins axi_fr9009_config_0/m_axis_afifo_tready] [get_bd_pins axis_data_fifo_0/m_axis_tready]
   connect_bd_net -net axi_fr9009_config_0_m_axis_mm2s_sts_tready [get_bd_pins axi_datamover_0/m_axis_mm2s_sts_tready] [get_bd_pins axi_fr9009_config_0/m_axis_mm2s_sts_tready]
@@ -1124,10 +1143,6 @@ Flash#Quad SPI Flash#Quad SPI Flash#SD 0#SD 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0
   connect_bd_net -net axi_fr9009_config_0_s_axis_mm2s_cmd_tdata [get_bd_pins axi_datamover_0/s_axis_mm2s_cmd_tdata] [get_bd_pins axi_fr9009_config_0/s_axis_mm2s_cmd_tdata]
   connect_bd_net -net axi_fr9009_config_0_s_axis_mm2s_cmd_tvalid [get_bd_pins axi_datamover_0/s_axis_mm2s_cmd_tvalid] [get_bd_pins axi_fr9009_config_0/s_axis_mm2s_cmd_tvalid]
   connect_bd_net -net axi_fr9009_config_0_src_sel_o [get_bd_pins axi_fr9009_config_0/src_sel_o] [get_bd_pins util_tx_data_pack_0/src_sel]
-  connect_bd_net -net axi_fr9009_config_0_tone_1_freq_word_o [get_bd_pins axi_fr9009_config_0/tone_1_freq_word_o] [get_bd_pins util_tx_data_pack_0/tone_1_freq_word]
-  connect_bd_net -net axi_fr9009_config_0_tone_1_scale_o [get_bd_pins axi_fr9009_config_0/tone_1_scale_o] [get_bd_pins util_tx_data_pack_0/tone_1_scale]
-  connect_bd_net -net axi_fr9009_config_0_tone_2_freq_word_o [get_bd_pins axi_fr9009_config_0/tone_2_freq_word_o] [get_bd_pins util_tx_data_pack_0/tone_2_freq_word]
-  connect_bd_net -net axi_fr9009_config_0_tone_2_scale_o [get_bd_pins axi_fr9009_config_0/tone_2_scale_o] [get_bd_pins util_tx_data_pack_0/tone_2_scale]
   connect_bd_net -net axi_quad_spi_0_io0_o [get_bd_ports axi_spi_mosi] [get_bd_pins axi_quad_spi_0/io0_o]
   connect_bd_net -net axi_quad_spi_0_sck_o [get_bd_ports axi_spi_sck] [get_bd_pins axi_quad_spi_0/sck_o]
   connect_bd_net -net axi_quad_spi_0_ss_o [get_bd_ports axi_spi_csn] [get_bd_pins axi_quad_spi_0/ss_o]
@@ -1139,18 +1154,18 @@ Flash#Quad SPI Flash#Quad SPI Flash#SD 0#SD 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0
   connect_bd_net -net jesd204_phy_txp_out [get_bd_ports txp_out_0] [get_bd_pins jesd/txp_out]
   connect_bd_net -net jesd204_rx_rx_aresetn [get_bd_ports rx_aresetn_0] [get_bd_pins jesd/rx_aresetn]
   connect_bd_net -net jesd204_rx_rx_start_of_frame [get_bd_ports rx_start_of_frame_0] [get_bd_pins jesd/rx_start_of_frame]
-  connect_bd_net -net jesd204_rx_rx_start_of_multiframe [get_bd_ports rx_start_of_multiframe_0] [get_bd_pins jesd/rx_start_of_multiframe] [get_bd_pins util_rx_data_capture_0/rx_start_of_multiframe_0]
-  connect_bd_net -net jesd204_rx_rx_sync [get_bd_ports rx_sync_0] [get_bd_pins jesd/rx_sync]
-  connect_bd_net -net jesd204_rx_rx_tvalid [get_bd_ports rx_tvalid_0] [get_bd_pins jesd/rx_tvalid]
+   connect_bd_net -net jesd204_rx_rx_start_of_multiframe [get_bd_ports rx_start_of_multiframe_0] [get_bd_pins ila_0/probe6] [get_bd_pins jesd/rx_start_of_multiframe] [get_bd_pins util_rx_data_capture_0/rx_start_of_multiframe_0]
+   connect_bd_net -net jesd204_rx_rx_sync [get_bd_ports rx_sync_0] [get_bd_pins ila_0/probe2] [get_bd_pins jesd/rx_sync]
+   connect_bd_net -net jesd204_rx_rx_tvalid [get_bd_ports rx_tvalid_0] [get_bd_pins ila_0/probe4] [get_bd_pins jesd/rx_tvalid]
   connect_bd_net -net jesd204_tx_tx_aresetn [get_bd_ports tx_aresetn_0] [get_bd_pins jesd/tx_aresetn]
   connect_bd_net -net jesd204_tx_tx_start_of_frame [get_bd_ports tx_start_of_frame_0] [get_bd_pins jesd/tx_start_of_frame]
-  connect_bd_net -net jesd204_tx_tx_start_of_multiframe [get_bd_ports tx_start_of_multiframe_0] [get_bd_pins jesd/tx_start_of_multiframe]
-  connect_bd_net -net jesd204_tx_tx_tready [get_bd_ports tx_tready_0] [get_bd_pins jesd/tx_tready]
+   connect_bd_net -net jesd204_tx_tx_start_of_multiframe [get_bd_ports tx_start_of_multiframe_0] [get_bd_pins ila_0/probe7] [get_bd_pins jesd/tx_start_of_multiframe]
+   connect_bd_net -net jesd204_tx_tx_tready [get_bd_ports tx_tready_0] [get_bd_pins ila_0/probe3] [get_bd_pins jesd/tx_tready]
   connect_bd_net -net jesd_rx_tdata [get_bd_ports rx_tdata_0] [get_bd_pins jesd/rx_tdata] [get_bd_pins util_rx_data_capture_0/rx_tdata_0]
   connect_bd_net -net proc_sys_reset_0_peripheral_aresetn [get_bd_pins axi_bram_ctrl_0/s_axi_aresetn] [get_bd_pins axi_quad_spi_0/s_axi_aresetn] [get_bd_pins jesd/s_axi_aresetn] [get_bd_pins proc_sys_reset_0/peripheral_aresetn] [get_bd_pins smartconnect_0/aresetn]
   connect_bd_net -net proc_sys_reset_2_interconnect_aresetn [get_bd_ports rstn] [get_bd_pins proc_sys_reset_2/interconnect_aresetn] [get_bd_pins util_rx_data_capture_0/rstn]
   connect_bd_net -net qpll_refclk_0_1 [get_bd_ports qpll_refclk] [get_bd_pins jesd/qpll_refclk]
-  connect_bd_net -net rx_core_clk_0_1 [get_bd_ports core_clk] [get_bd_pins axis_data_fifo_0/m_axis_aclk] [get_bd_pins jesd/core_clk] [get_bd_pins proc_sys_reset_2/slowest_sync_clk] [get_bd_pins util_rx_data_capture_0/clk]
+   connect_bd_net -net rx_core_clk_0_1 [get_bd_ports core_clk] [get_bd_pins axis_data_fifo_0/m_axis_aclk] [get_bd_pins ila_0/clk] [get_bd_pins jesd/core_clk] [get_bd_pins proc_sys_reset_2/slowest_sync_clk] [get_bd_pins util_rx_data_capture_0/clk]
   connect_bd_net -net rx_reset_0_1 [get_bd_ports rx_reset] [get_bd_pins jesd/rx_reset_0]
   connect_bd_net -net rxn_in_0_1 [get_bd_ports rxn_in_0] [get_bd_pins jesd/rxn_in]
   connect_bd_net -net rxp_in_0_1 [get_bd_ports rxp_in_0] [get_bd_pins jesd/rxp_in]
@@ -1173,9 +1188,9 @@ Flash#Quad SPI Flash#Quad SPI Flash#SD 0#SD 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0
   connect_bd_net -net sys_ps7_SPI1_SS2_O [get_bd_ports spi1_csn_2_o] [get_bd_pins sys_ps7/SPI1_SS2_O]
   connect_bd_net -net sys_ps7_SPI1_SS_O [get_bd_ports spi1_csn_0_o] [get_bd_pins sys_ps7/SPI1_SS_O]
   connect_bd_net -net tx_reset_0_0_1 [get_bd_ports tx_reset] [get_bd_pins jesd/tx_reset_0]
-  connect_bd_net -net tx_sync_0_1 [get_bd_ports tx_sync_0] [get_bd_pins jesd/tx_sync]
-  connect_bd_net -net tx_sysref_0_1 [get_bd_ports sysref_in] [get_bd_pins jesd/sysref_in]
-  connect_bd_net -net tx_tdata_1 [get_bd_ports tx_tdata_0] [get_bd_pins jesd/tx_tdata] [get_bd_pins util_tx_data_pack_0/tx_tdata]
+   connect_bd_net -net tx_sync_0_1 [get_bd_ports tx_sync_0] [get_bd_pins ila_0/probe1] [get_bd_pins jesd/tx_sync]
+   connect_bd_net -net tx_sysref_0_1 [get_bd_ports sysref_in] [get_bd_pins ila_0/probe0] [get_bd_pins jesd/sysref_in]
+   connect_bd_net -net tx_tdata_1 [get_bd_ports tx_tdata_0] [get_bd_pins ila_0/probe5] [get_bd_pins jesd/tx_tdata] [get_bd_pins util_tx_data_pack_0/tx_tdata]
   connect_bd_net -net util_rx_data_capture_0_bram_addr_0 [get_bd_pins blk_mem_gen_0/addrb] [get_bd_pins util_rx_data_capture_0/bram_addr_0]
   connect_bd_net -net util_rx_data_capture_0_bram_clk [get_bd_pins blk_mem_gen_0/clkb] [get_bd_pins util_rx_data_capture_0/bram_clk]
   connect_bd_net -net util_rx_data_capture_0_bram_din_0 [get_bd_pins blk_mem_gen_0/dinb] [get_bd_pins util_rx_data_capture_0/bram_din_0]
