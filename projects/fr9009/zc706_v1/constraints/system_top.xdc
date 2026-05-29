@@ -21,12 +21,13 @@ set_property IOSTANDARD LVCMOS25 [get_ports spi1_csn_0_o]
 set_property IOSTANDARD LVCMOS25 [get_ports spi1_csn_1_o]
 set_property PACKAGE_PIN AJ20 [get_ports fr9009_0_rst]
 set_property PACKAGE_PIN R28 [get_ports ad9528_0_rst]
-set_property PACKAGE_PIN AJ15 [get_ports fr9009_1_rst]
-set_property PACKAGE_PIN AJ30 [get_ports ad9528_1_rst]
+# fr9009_1_rst / ad9528_1_rst ports not present in system_top.v for single-device build
+# set_property PACKAGE_PIN AJ15 [get_ports fr9009_1_rst]
+# set_property PACKAGE_PIN AJ30 [get_ports ad9528_1_rst]
 set_property IOSTANDARD LVCMOS25 [get_ports fr9009_0_rst]
 set_property IOSTANDARD LVCMOS25 [get_ports ad9528_0_rst]
-set_property IOSTANDARD LVCMOS25 [get_ports fr9009_1_rst]
-set_property IOSTANDARD LVCMOS25 [get_ports ad9528_1_rst]
+# set_property IOSTANDARD LVCMOS25 [get_ports fr9009_1_rst]
+# set_property IOSTANDARD LVCMOS25 [get_ports ad9528_1_rst]
 set_property PACKAGE_PIN T28 [get_ports ad9528_sysref_req]
 set_property IOSTANDARD LVCMOS25 [get_ports ad9528_sysref_req]
 
@@ -61,6 +62,11 @@ set_property PACKAGE_PIN AE8 [get_ports {rxp_in_0[3]}]
 
 
 create_clock -period 4.000 -name gt_clk_i_p -waveform {0.000 2.000} [get_ports gt_clk_i_p]
+
+# clk_fpga_0 (PS FCLK, ~100 MHz) and gt_clk_i_p (GT reference, 250 MHz) are asynchronous
+set_clock_groups -asynchronous \
+  -group [get_clocks clk_fpga_0] \
+  -group [get_clocks gt_clk_i_p]
 
 
 
