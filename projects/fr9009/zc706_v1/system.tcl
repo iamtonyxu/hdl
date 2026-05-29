@@ -37,6 +37,13 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 # To test this script, run the following commands from Vivado Tcl console:
 # source system_script.tcl
 
+
+# The design that will be created by this Tcl script contains the following 
+# module references:
+# data2fpga
+
+# Please add the sources of those modules before sourcing this Tcl script.
+
 # If there is no project opened, this script will create a
 # project, but make sure you do not have an existing project
 # <./myproj/project_1.xpr> in the current working folder.
@@ -125,19 +132,17 @@ set bCheckIPs 1
 if { $bCheckIPs == 1 } {
    set list_check_ips "\ 
 xilinx.com:ip:axi_bram_ctrl:4.1\
+analog.com:user:axi_config_8_reg:1.0\
 xilinx.com:ip:axi_datamover:5.1\
-analog.com:user:axi_fr9009_config:1.0\
 xilinx.com:ip:axi_quad_spi:3.2\
 xilinx.com:ip:axis_data_fifo:2.0\
 xilinx.com:ip:blk_mem_gen:8.4\
+xilinx.com:ip:ila:6.2\
 xilinx.com:ip:proc_sys_reset:5.0\
 xilinx.com:ip:smartconnect:1.0\
 xilinx.com:ip:processing_system7:5.5\
-analog.com:user:util_rx_data_capture:1.0\
-analog.com:user:util_tx_data_pack:1.0\
 xilinx.com:ip:jesd204_phy:4.0\
 xilinx.com:ip:jesd204:7.2\
-xilinx.com:ip:ila:6.2\
 xilinx.com:ip:system_ila:1.1\
 "
 
@@ -156,6 +161,38 @@ xilinx.com:ip:system_ila:1.1\
       set bCheckIPsPassed 0
    }
 
+}
+
+##################################################################
+# CHECK Modules
+##################################################################
+
+# Auto-import local module references expected by this generated BD script.
+set data2fpga_src [file normalize [file join $script_folder src data2fpga.v]]
+if {[file exists $data2fpga_src] && [can_resolve_reference data2fpga] == 0} {
+   add_files -norecurse -fileset sources_1 $data2fpga_src
+}
+
+set bCheckModules 1
+if { $bCheckModules == 1 } {
+   set list_check_mods "\ 
+data2fpga\
+"
+
+   set list_mods_missing ""
+   common::send_gid_msg -ssname BD::TCL -id 2020 -severity "INFO" "Checking if the following modules exist in the project's sources: $list_check_mods ."
+
+   foreach mod_vlnv $list_check_mods {
+      if { [can_resolve_reference $mod_vlnv] == 0 } {
+         lappend list_mods_missing $mod_vlnv
+      }
+   }
+
+   if { $list_mods_missing ne "" } {
+      catch {common::send_gid_msg -ssname BD::TCL -id 2021 -severity "ERROR" "The following module(s) are not found in the project: $list_mods_missing" }
+      common::send_gid_msg -ssname BD::TCL -id 2022 -severity "INFO" "Please add source files for the missing module(s) above."
+      set bCheckIPsPassed 0
+   }
 }
 
 if { $bCheckIPsPassed != 1 } {
@@ -378,6 +415,12 @@ proc create_root_design { parentCell } {
 
 
   # Create interface ports
+  set bram_portb [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:bram_rtl:1.0 bram_portb ]
+  set_property -dict [ list \
+   CONFIG.MASTER_TYPE {BRAM_CTRL} \
+   CONFIG.READ_WRITE_MODE {READ_WRITE} \
+   ] $bram_portb
+
   set ddr [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:ddrx_rtl:1.0 ddr ]
 
   set fixed_io [ create_bd_intf_port -mode Master -vlnv xilinx.com:display_processing_system7:fixedio_rtl:1.0 fixed_io ]
@@ -388,11 +431,23 @@ proc create_root_design { parentCell } {
   set axi_spi_miso [ create_bd_port -dir I axi_spi_miso ]
   set axi_spi_mosi [ create_bd_port -dir O axi_spi_mosi ]
   set axi_spi_sck [ create_bd_port -dir O axi_spi_sck ]
+  set cfg_0 [ create_bd_port -dir O -from 31 -to 0 cfg_0 ]
+  set cfg_1 [ create_bd_port -dir O -from 31 -to 0 cfg_1 ]
+  set cfg_2 [ create_bd_port -dir O -from 31 -to 0 cfg_2 ]
+  set cfg_3 [ create_bd_port -dir O -from 31 -to 0 cfg_3 ]
+  set cfg_4 [ create_bd_port -dir O -from 31 -to 0 cfg_4 ]
+  set cfg_5 [ create_bd_port -dir O -from 31 -to 0 cfg_5 ]
+  set cfg_6 [ create_bd_port -dir O -from 31 -to 0 cfg_6 ]
+  set cfg_7 [ create_bd_port -dir O -from 31 -to 0 cfg_7 ]
   set core_clk [ create_bd_port -dir I -type clk -freq_hz 250000000 core_clk ]
   set_property -dict [ list \
    CONFIG.ASSOCIATED_RESET {rstn} \
  ] $core_clk
+  set ddr_tdata [ create_bd_port -dir O -from 63 -to 0 ddr_tdata ]
+  set ddr_tvalid [ create_bd_port -dir O ddr_tvalid ]
   set gpio_o [ create_bd_port -dir O -from 11 -to 0 gpio_o ]
+  set paly_ctrl [ create_bd_port -dir I paly_ctrl ]
+  set play_len_cfg [ create_bd_port -dir I -from 31 -to 0 play_len_cfg ]
   set qpll_refclk [ create_bd_port -dir I -type clk -freq_hz 250000000 qpll_refclk ]
   set rstn [ create_bd_port -dir O -from 0 -to 0 -type rst rstn ]
   set rx_aresetn_0 [ create_bd_port -dir O -type rst rx_aresetn_0 ]
@@ -424,7 +479,7 @@ proc create_root_design { parentCell } {
   set tx_start_of_frame_0 [ create_bd_port -dir O -from 3 -to 0 tx_start_of_frame_0 ]
   set tx_start_of_multiframe_0 [ create_bd_port -dir O -from 3 -to 0 tx_start_of_multiframe_0 ]
   set tx_sync_0 [ create_bd_port -dir I tx_sync_0 ]
-  set tx_tdata_0 [ create_bd_port -dir O -from 127 -to 0 -type data tx_tdata_0 ]
+  set tx_tdata_0 [ create_bd_port -dir I -from 127 -to 0 tx_tdata_0 ]
   set tx_tready_0 [ create_bd_port -dir O tx_tready_0 ]
   set txn_out_0 [ create_bd_port -dir O -from 3 -to 0 txn_out_0 ]
   set txp_out_0 [ create_bd_port -dir O -from 3 -to 0 txp_out_0 ]
@@ -436,6 +491,9 @@ proc create_root_design { parentCell } {
     CONFIG.SINGLE_PORT_BRAM {1} \
   ] $axi_bram_ctrl_0
 
+
+  # Create instance: axi_config_8_reg_0, and set properties
+  set axi_config_8_reg_0 [ create_bd_cell -type ip -vlnv analog.com:user:axi_config_8_reg:1.0 axi_config_8_reg_0 ]
 
   # Create instance: axi_datamover_0, and set properties
   set axi_datamover_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_datamover:5.1 axi_datamover_0 ]
@@ -451,9 +509,6 @@ proc create_root_design { parentCell } {
   ] $axi_datamover_0
 
 
-  # Create instance: axi_fr9009_config_0, and set properties
-  set axi_fr9009_config_0 [ create_bd_cell -type ip -vlnv analog.com:user:axi_fr9009_config:1.0 axi_fr9009_config_0 ]
-
   # Create instance: axi_quad_spi_0, and set properties
   set axi_quad_spi_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_quad_spi:3.2 axi_quad_spi_0 ]
   set_property -dict [list \
@@ -468,20 +523,6 @@ proc create_root_design { parentCell } {
     CONFIG.IS_ACLK_ASYNC {1} \
     CONFIG.TDATA_NUM_BYTES {8} \
   ] $axis_data_fifo_0
-
-
-   # Create instance: ila_0, and set properties
-   set ila_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:ila:6.2 ila_0 ]
-   set_property -dict [list \
-      CONFIG.C_DATA_DEPTH {8192} \
-      CONFIG.C_ENABLE_ILA_AXI_MON {false} \
-      CONFIG.C_MONITOR_TYPE {Native} \
-      CONFIG.C_NUM_OF_PROBES {8} \
-      CONFIG.C_PROBE5_TYPE {1} \
-      CONFIG.C_PROBE5_WIDTH {128} \
-      CONFIG.C_PROBE6_WIDTH {4} \
-      CONFIG.C_PROBE7_WIDTH {4} \
-   ] $ila_0
 
 
   # Create instance: blk_mem_gen_0, and set properties
@@ -506,6 +547,30 @@ proc create_root_design { parentCell } {
   ] $blk_mem_gen_0
 
 
+  # Create instance: data2fpga_0, and set properties
+  set block_name data2fpga
+  set block_cell_name data2fpga_0
+  if { [catch {set data2fpga_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2095 -severity "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $data2fpga_0 eq "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2096 -severity "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+  
+  # Create instance: ila_0, and set properties
+  set ila_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:ila:6.2 ila_0 ]
+  set_property -dict [list \
+    CONFIG.C_DATA_DEPTH {8192} \
+    CONFIG.C_ENABLE_ILA_AXI_MON {false} \
+    CONFIG.C_MONITOR_TYPE {Native} \
+    CONFIG.C_NUM_OF_PROBES {11} \
+    CONFIG.C_PROBE0_WIDTH {8} \
+    CONFIG.C_PROBE4_WIDTH {72} \
+    CONFIG.C_PROBE7_WIDTH {64} \
+  ] $ila_0
+
+
   # Create instance: jesd
   create_hier_cell_jesd [current_bd_instance .] jesd
 
@@ -521,8 +586,7 @@ proc create_root_design { parentCell } {
   # Create instance: smartconnect_0, and set properties
   set smartconnect_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 smartconnect_0 ]
   set_property -dict [list \
-    CONFIG.NUM_CLKS {2} \
-    CONFIG.NUM_MI {7} \
+    CONFIG.NUM_MI {6} \
     CONFIG.NUM_SI {1} \
   ] $smartconnect_0
 
@@ -1102,70 +1166,70 @@ Flash#Quad SPI Flash#Quad SPI Flash#SD 0#SD 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0
   ] $sys_ps7
 
 
-  # Create instance: util_rx_data_capture_0, and set properties
-  set util_rx_data_capture_0 [ create_bd_cell -type ip -vlnv analog.com:user:util_rx_data_capture:1.0 util_rx_data_capture_0 ]
-
-  # Create instance: util_tx_data_pack_0, and set properties
-  set util_tx_data_pack_0 [ create_bd_cell -type ip -vlnv analog.com:user:util_tx_data_pack:1.0 util_tx_data_pack_0 ]
-
   # Create interface connections
+  connect_bd_intf_net -intf_net BRAM_PORTB_0_1 [get_bd_intf_ports bram_portb] [get_bd_intf_pins blk_mem_gen_0/BRAM_PORTB]
   connect_bd_intf_net -intf_net axi_bram_ctrl_0_BRAM_PORTA [get_bd_intf_pins axi_bram_ctrl_0/BRAM_PORTA] [get_bd_intf_pins blk_mem_gen_0/BRAM_PORTA]
   connect_bd_intf_net -intf_net axi_datamover_0_M_AXI_MM2S [get_bd_intf_pins axi_datamover_0/M_AXI_MM2S] [get_bd_intf_pins smartconnect_1/S00_AXI]
   connect_bd_intf_net -intf_net smartconnect_0_M00_AXI [get_bd_intf_pins jesd/s_axi_phy] [get_bd_intf_pins smartconnect_0/M00_AXI]
   connect_bd_intf_net -intf_net smartconnect_0_M01_AXI [get_bd_intf_pins jesd/s_axi_rx] [get_bd_intf_pins smartconnect_0/M01_AXI]
   connect_bd_intf_net -intf_net smartconnect_0_M02_AXI [get_bd_intf_pins jesd/s_axi_tx] [get_bd_intf_pins smartconnect_0/M02_AXI]
+  connect_bd_intf_net -intf_net smartconnect_0_M03_AXI [get_bd_intf_pins axi_config_8_reg_0/s_axi] [get_bd_intf_pins smartconnect_0/M03_AXI]
   connect_bd_intf_net -intf_net smartconnect_0_M04_AXI [get_bd_intf_pins axi_bram_ctrl_0/S_AXI] [get_bd_intf_pins smartconnect_0/M04_AXI]
   connect_bd_intf_net -intf_net smartconnect_0_M05_AXI [get_bd_intf_pins axi_quad_spi_0/AXI_LITE] [get_bd_intf_pins smartconnect_0/M05_AXI]
-  connect_bd_intf_net -intf_net smartconnect_0_M06_AXI [get_bd_intf_pins axi_fr9009_config_0/s_axi] [get_bd_intf_pins smartconnect_0/M06_AXI]
   connect_bd_intf_net -intf_net smartconnect_1_M00_AXI [get_bd_intf_pins smartconnect_1/M00_AXI] [get_bd_intf_pins sys_ps7/S_AXI_HP0]
   connect_bd_intf_net -intf_net sys_ps7_DDR [get_bd_intf_ports ddr] [get_bd_intf_pins sys_ps7/DDR]
   connect_bd_intf_net -intf_net sys_ps7_FIXED_IO [get_bd_intf_ports fixed_io] [get_bd_intf_pins sys_ps7/FIXED_IO]
   connect_bd_intf_net -intf_net sys_ps7_M_AXI_GP0 [get_bd_intf_pins smartconnect_0/S00_AXI] [get_bd_intf_pins sys_ps7/M_AXI_GP0]
 
   # Create port connections
-   connect_bd_net -net Net [get_bd_pins axi_datamover_0/m_axi_mm2s_aclk] [get_bd_pins axi_datamover_0/m_axis_mm2s_cmdsts_aclk] [get_bd_pins axi_fr9009_config_0/s_axi_aclk] [get_bd_pins axis_data_fifo_0/s_axis_aclk] [get_bd_pins proc_sys_reset_1/slowest_sync_clk] [get_bd_pins smartconnect_0/aclk1] [get_bd_pins smartconnect_1/aclk] [get_bd_pins sys_ps7/FCLK_CLK2] [get_bd_pins sys_ps7/S_AXI_HP0_ACLK]
-  connect_bd_net -net Net1 [get_bd_pins axi_datamover_0/m_axi_mm2s_aresetn] [get_bd_pins axi_datamover_0/m_axis_mm2s_cmdsts_aresetn] [get_bd_pins axi_fr9009_config_0/s_axi_aresetn] [get_bd_pins axis_data_fifo_0/s_axis_aresetn] [get_bd_pins proc_sys_reset_1/interconnect_aresetn] [get_bd_pins smartconnect_1/aresetn] [get_bd_pins util_tx_data_pack_0/rstn]
-  connect_bd_net -net axi_datamover_0_m_axis_mm2s_tdata [get_bd_pins axi_datamover_0/m_axis_mm2s_tdata] [get_bd_pins axis_data_fifo_0/s_axis_tdata]
-  connect_bd_net -net axi_datamover_0_m_axis_mm2s_tlast [get_bd_pins axi_datamover_0/m_axis_mm2s_tlast] [get_bd_pins axi_fr9009_config_0/m_axis_mm2s_tlast]
-  connect_bd_net -net axi_datamover_0_m_axis_mm2s_tvalid [get_bd_pins axi_datamover_0/m_axis_mm2s_tvalid] [get_bd_pins axis_data_fifo_0/s_axis_tvalid]
-  connect_bd_net -net axi_datamover_0_s_axis_mm2s_cmd_tready [get_bd_pins axi_datamover_0/s_axis_mm2s_cmd_tready] [get_bd_pins axi_fr9009_config_0/s_axis_mm2s_cmd_tready]
-  connect_bd_net -net axi_fr9009_config_0_const_data_0_o [get_bd_pins axi_fr9009_config_0/const_data_0_o] [get_bd_pins util_tx_data_pack_0/const_data_0]
-  connect_bd_net -net axi_fr9009_config_0_const_data_1_o [get_bd_pins axi_fr9009_config_0/const_data_1_o] [get_bd_pins util_tx_data_pack_0/const_data_1]
-   connect_bd_net -net axi_fr9009_config_0_dds_ctrl_o [get_bd_pins axi_fr9009_config_0/dds_ctrl_o] [get_bd_pins util_tx_data_pack_0/dds_ctrl]
-   connect_bd_net -net axi_fr9009_config_0_dds_pinc_0_o [get_bd_pins axi_fr9009_config_0/dds_pinc_0_o] [get_bd_pins util_tx_data_pack_0/dds_pinc_0]
-   connect_bd_net -net axi_fr9009_config_0_dds_poff_0_o [get_bd_pins axi_fr9009_config_0/dds_poff_0_o] [get_bd_pins util_tx_data_pack_0/dds_poff_0]
-   connect_bd_net -net axi_fr9009_config_0_dds_pinc_1_o [get_bd_pins axi_fr9009_config_0/dds_pinc_1_o] [get_bd_pins util_tx_data_pack_0/dds_pinc_1]
-   connect_bd_net -net axi_fr9009_config_0_dds_poff_1_o [get_bd_pins axi_fr9009_config_0/dds_poff_1_o] [get_bd_pins util_tx_data_pack_0/dds_poff_1]
-  connect_bd_net -net axi_fr9009_config_0_frame_mapper_sel_o [get_bd_pins axi_fr9009_config_0/frame_mapper_sel_o] [get_bd_pins util_tx_data_pack_0/frame_mapper_sel]
-  connect_bd_net -net axi_fr9009_config_0_m_axis_afifo_tready [get_bd_pins axi_fr9009_config_0/m_axis_afifo_tready] [get_bd_pins axis_data_fifo_0/m_axis_tready]
-  connect_bd_net -net axi_fr9009_config_0_m_axis_mm2s_sts_tready [get_bd_pins axi_datamover_0/m_axis_mm2s_sts_tready] [get_bd_pins axi_fr9009_config_0/m_axis_mm2s_sts_tready]
-  connect_bd_net -net axi_fr9009_config_0_rx_cap_config_o [get_bd_pins axi_fr9009_config_0/rx_cap_config_o] [get_bd_pins util_rx_data_capture_0/rx_cap_config]
-  connect_bd_net -net axi_fr9009_config_0_s_axis_mm2s_cmd_tdata [get_bd_pins axi_datamover_0/s_axis_mm2s_cmd_tdata] [get_bd_pins axi_fr9009_config_0/s_axis_mm2s_cmd_tdata]
-  connect_bd_net -net axi_fr9009_config_0_s_axis_mm2s_cmd_tvalid [get_bd_pins axi_datamover_0/s_axis_mm2s_cmd_tvalid] [get_bd_pins axi_fr9009_config_0/s_axis_mm2s_cmd_tvalid]
-  connect_bd_net -net axi_fr9009_config_0_src_sel_o [get_bd_pins axi_fr9009_config_0/src_sel_o] [get_bd_pins util_tx_data_pack_0/src_sel]
+  connect_bd_net -net Net [get_bd_pins axi_datamover_0/m_axi_mm2s_aclk] [get_bd_pins axi_datamover_0/m_axis_mm2s_cmdsts_aclk] [get_bd_pins axis_data_fifo_0/s_axis_aclk] [get_bd_pins data2fpga_0/clk] [get_bd_pins ila_0/clk] [get_bd_pins proc_sys_reset_1/slowest_sync_clk] [get_bd_pins smartconnect_1/aclk] [get_bd_pins sys_ps7/FCLK_CLK2] [get_bd_pins sys_ps7/S_AXI_HP0_ACLK]
+  connect_bd_net -net Net1 [get_bd_pins axi_datamover_0/m_axi_mm2s_aresetn] [get_bd_pins axi_datamover_0/m_axis_mm2s_cmdsts_aresetn] [get_bd_pins axis_data_fifo_0/s_axis_aresetn] [get_bd_pins data2fpga_0/rstn] [get_bd_pins proc_sys_reset_1/interconnect_aresetn] [get_bd_pins smartconnect_1/aresetn]
+  connect_bd_net -net axi_config_8_reg_0_sreg0 [get_bd_ports cfg_0] [get_bd_pins axi_config_8_reg_0/sreg0]
+  connect_bd_net -net axi_config_8_reg_0_sreg1 [get_bd_ports cfg_1] [get_bd_pins axi_config_8_reg_0/sreg1]
+  connect_bd_net -net axi_config_8_reg_0_sreg2 [get_bd_ports cfg_2] [get_bd_pins axi_config_8_reg_0/sreg2]
+  connect_bd_net -net axi_config_8_reg_0_sreg3 [get_bd_ports cfg_3] [get_bd_pins axi_config_8_reg_0/sreg3]
+  connect_bd_net -net axi_config_8_reg_0_sreg4 [get_bd_ports cfg_4] [get_bd_pins axi_config_8_reg_0/sreg4]
+  connect_bd_net -net axi_config_8_reg_0_sreg5 [get_bd_ports cfg_5] [get_bd_pins axi_config_8_reg_0/sreg5]
+  connect_bd_net -net axi_config_8_reg_0_sreg6 [get_bd_ports cfg_6] [get_bd_pins axi_config_8_reg_0/sreg6]
+  connect_bd_net -net axi_config_8_reg_0_sreg7 [get_bd_ports cfg_7] [get_bd_pins axi_config_8_reg_0/sreg7]
+  connect_bd_net -net axi_datamover_0_m_axis_mm2s_sts_tdata [get_bd_pins axi_datamover_0/m_axis_mm2s_sts_tdata] [get_bd_pins ila_0/probe0]
+  connect_bd_net -net axi_datamover_0_m_axis_mm2s_sts_tkeep [get_bd_pins axi_datamover_0/m_axis_mm2s_sts_tkeep] [get_bd_pins ila_0/probe1]
+  connect_bd_net -net axi_datamover_0_m_axis_mm2s_sts_tlast [get_bd_pins axi_datamover_0/m_axis_mm2s_sts_tlast] [get_bd_pins ila_0/probe2]
+  connect_bd_net -net axi_datamover_0_m_axis_mm2s_sts_tvalid [get_bd_pins axi_datamover_0/m_axis_mm2s_sts_tvalid] [get_bd_pins ila_0/probe3]
+  connect_bd_net -net axi_datamover_0_m_axis_mm2s_tdata [get_bd_pins axi_datamover_0/m_axis_mm2s_tdata] [get_bd_pins axis_data_fifo_0/s_axis_tdata] [get_bd_pins ila_0/probe7]
+  connect_bd_net -net axi_datamover_0_m_axis_mm2s_tkeep [get_bd_pins axi_datamover_0/m_axis_mm2s_tkeep] [get_bd_pins ila_0/probe8]
+  connect_bd_net -net axi_datamover_0_m_axis_mm2s_tlast [get_bd_pins axi_datamover_0/m_axis_mm2s_tlast] [get_bd_pins data2fpga_0/m_axis_mm2s_tlast] [get_bd_pins ila_0/probe9]
+  connect_bd_net -net axi_datamover_0_m_axis_mm2s_tvalid [get_bd_pins axi_datamover_0/m_axis_mm2s_tvalid] [get_bd_pins axis_data_fifo_0/s_axis_tvalid] [get_bd_pins ila_0/probe10]
+  connect_bd_net -net axi_datamover_0_s_axis_mm2s_cmd_tready [get_bd_pins axi_datamover_0/s_axis_mm2s_cmd_tready] [get_bd_pins data2fpga_0/s_axis_mm2s_cmd_tready] [get_bd_pins ila_0/probe5]
   connect_bd_net -net axi_quad_spi_0_io0_o [get_bd_ports axi_spi_mosi] [get_bd_pins axi_quad_spi_0/io0_o]
   connect_bd_net -net axi_quad_spi_0_sck_o [get_bd_ports axi_spi_sck] [get_bd_pins axi_quad_spi_0/sck_o]
   connect_bd_net -net axi_quad_spi_0_ss_o [get_bd_ports axi_spi_csn] [get_bd_pins axi_quad_spi_0/ss_o]
-  connect_bd_net -net axis_data_fifo_0_m_axis_tdata [get_bd_pins axis_data_fifo_0/m_axis_tdata] [get_bd_pins util_tx_data_pack_0/afifo_ddr_data]
-  connect_bd_net -net axis_data_fifo_0_m_axis_tvalid [get_bd_pins axis_data_fifo_0/m_axis_tvalid] [get_bd_pins util_tx_data_pack_0/afifo_ddr_tvalid]
+  connect_bd_net -net axis_data_fifo_0_m_axis_tdata [get_bd_ports ddr_tdata] [get_bd_pins axis_data_fifo_0/m_axis_tdata]
+  connect_bd_net -net axis_data_fifo_0_m_axis_tvalid [get_bd_ports ddr_tvalid] [get_bd_pins axis_data_fifo_0/m_axis_tvalid]
   connect_bd_net -net axis_data_fifo_0_s_axis_tready [get_bd_pins axi_datamover_0/m_axis_mm2s_tready] [get_bd_pins axis_data_fifo_0/s_axis_tready]
+  connect_bd_net -net cfg_8_1 [get_bd_ports play_len_cfg] [get_bd_pins data2fpga_0/cfg]
+  connect_bd_net -net ctrl_0_1 [get_bd_ports paly_ctrl] [get_bd_pins data2fpga_0/ctrl]
+  connect_bd_net -net data2fpga_0_m_axis_mm2s_sts_tready [get_bd_pins axi_datamover_0/m_axis_mm2s_sts_tready] [get_bd_pins data2fpga_0/m_axis_mm2s_sts_tready]
+  connect_bd_net -net data2fpga_0_m_axis_tready [get_bd_pins axis_data_fifo_0/m_axis_tready] [get_bd_pins data2fpga_0/m_axis_tready]
+  connect_bd_net -net data2fpga_0_s_axis_mm2s_cmd_tdata [get_bd_pins axi_datamover_0/s_axis_mm2s_cmd_tdata] [get_bd_pins data2fpga_0/s_axis_mm2s_cmd_tdata] [get_bd_pins ila_0/probe4]
+  connect_bd_net -net data2fpga_0_s_axis_mm2s_cmd_tvalid [get_bd_pins axi_datamover_0/s_axis_mm2s_cmd_tvalid] [get_bd_pins data2fpga_0/s_axis_mm2s_cmd_tvalid] [get_bd_pins ila_0/probe6]
   connect_bd_net -net io1_i_0_1 [get_bd_ports axi_spi_miso] [get_bd_pins axi_quad_spi_0/io1_i]
   connect_bd_net -net jesd204_phy_txn_out [get_bd_ports txn_out_0] [get_bd_pins jesd/txn_out]
   connect_bd_net -net jesd204_phy_txp_out [get_bd_ports txp_out_0] [get_bd_pins jesd/txp_out]
   connect_bd_net -net jesd204_rx_rx_aresetn [get_bd_ports rx_aresetn_0] [get_bd_pins jesd/rx_aresetn]
   connect_bd_net -net jesd204_rx_rx_start_of_frame [get_bd_ports rx_start_of_frame_0] [get_bd_pins jesd/rx_start_of_frame]
-   connect_bd_net -net jesd204_rx_rx_start_of_multiframe [get_bd_ports rx_start_of_multiframe_0] [get_bd_pins ila_0/probe6] [get_bd_pins jesd/rx_start_of_multiframe] [get_bd_pins util_rx_data_capture_0/rx_start_of_multiframe_0]
-   connect_bd_net -net jesd204_rx_rx_sync [get_bd_ports rx_sync_0] [get_bd_pins ila_0/probe2] [get_bd_pins jesd/rx_sync]
-   connect_bd_net -net jesd204_rx_rx_tvalid [get_bd_ports rx_tvalid_0] [get_bd_pins ila_0/probe4] [get_bd_pins jesd/rx_tvalid]
+  connect_bd_net -net jesd204_rx_rx_start_of_multiframe [get_bd_ports rx_start_of_multiframe_0] [get_bd_pins jesd/rx_start_of_multiframe]
+  connect_bd_net -net jesd204_rx_rx_sync [get_bd_ports rx_sync_0] [get_bd_pins jesd/rx_sync]
+  connect_bd_net -net jesd204_rx_rx_tvalid [get_bd_ports rx_tvalid_0] [get_bd_pins jesd/rx_tvalid]
   connect_bd_net -net jesd204_tx_tx_aresetn [get_bd_ports tx_aresetn_0] [get_bd_pins jesd/tx_aresetn]
   connect_bd_net -net jesd204_tx_tx_start_of_frame [get_bd_ports tx_start_of_frame_0] [get_bd_pins jesd/tx_start_of_frame]
-   connect_bd_net -net jesd204_tx_tx_start_of_multiframe [get_bd_ports tx_start_of_multiframe_0] [get_bd_pins ila_0/probe7] [get_bd_pins jesd/tx_start_of_multiframe]
-   connect_bd_net -net jesd204_tx_tx_tready [get_bd_ports tx_tready_0] [get_bd_pins ila_0/probe3] [get_bd_pins jesd/tx_tready]
-  connect_bd_net -net jesd_rx_tdata [get_bd_ports rx_tdata_0] [get_bd_pins jesd/rx_tdata] [get_bd_pins util_rx_data_capture_0/rx_tdata_0]
-  connect_bd_net -net proc_sys_reset_0_peripheral_aresetn [get_bd_pins axi_bram_ctrl_0/s_axi_aresetn] [get_bd_pins axi_quad_spi_0/s_axi_aresetn] [get_bd_pins jesd/s_axi_aresetn] [get_bd_pins proc_sys_reset_0/peripheral_aresetn] [get_bd_pins smartconnect_0/aresetn]
-  connect_bd_net -net proc_sys_reset_2_interconnect_aresetn [get_bd_ports rstn] [get_bd_pins proc_sys_reset_2/interconnect_aresetn] [get_bd_pins util_rx_data_capture_0/rstn]
+  connect_bd_net -net jesd204_tx_tx_start_of_multiframe [get_bd_ports tx_start_of_multiframe_0] [get_bd_pins jesd/tx_start_of_multiframe]
+  connect_bd_net -net jesd204_tx_tx_tready [get_bd_ports tx_tready_0] [get_bd_pins jesd/tx_tready]
+  connect_bd_net -net jesd_rx_tdata [get_bd_ports rx_tdata_0] [get_bd_pins jesd/rx_tdata]
+  connect_bd_net -net proc_sys_reset_0_peripheral_aresetn [get_bd_pins axi_bram_ctrl_0/s_axi_aresetn] [get_bd_pins axi_config_8_reg_0/s_axi_aresetn] [get_bd_pins axi_quad_spi_0/s_axi_aresetn] [get_bd_pins jesd/s_axi_aresetn] [get_bd_pins proc_sys_reset_0/peripheral_aresetn] [get_bd_pins smartconnect_0/aresetn]
+  connect_bd_net -net proc_sys_reset_2_interconnect_aresetn [get_bd_ports rstn] [get_bd_pins proc_sys_reset_2/interconnect_aresetn]
   connect_bd_net -net qpll_refclk_0_1 [get_bd_ports qpll_refclk] [get_bd_pins jesd/qpll_refclk]
-   connect_bd_net -net rx_core_clk_0_1 [get_bd_ports core_clk] [get_bd_pins axis_data_fifo_0/m_axis_aclk] [get_bd_pins ila_0/clk] [get_bd_pins jesd/core_clk] [get_bd_pins proc_sys_reset_2/slowest_sync_clk] [get_bd_pins util_rx_data_capture_0/clk] [get_bd_pins util_tx_data_pack_0/clk]
+  connect_bd_net -net rx_core_clk_0_1 [get_bd_ports core_clk] [get_bd_pins axis_data_fifo_0/m_axis_aclk] [get_bd_pins jesd/core_clk] [get_bd_pins proc_sys_reset_2/slowest_sync_clk]
   connect_bd_net -net rx_reset_0_1 [get_bd_ports rx_reset] [get_bd_pins jesd/rx_reset_0]
   connect_bd_net -net rxn_in_0_1 [get_bd_ports rxn_in_0] [get_bd_pins jesd/rxn_in]
   connect_bd_net -net rxp_in_0_1 [get_bd_ports rxp_in_0] [get_bd_pins jesd/rxp_in]
@@ -1173,7 +1237,7 @@ Flash#Quad SPI Flash#Quad SPI Flash#SD 0#SD 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0
   connect_bd_net -net spi0_sdi_i_1 [get_bd_ports spi0_sdi_i] [get_bd_pins sys_ps7/SPI0_MISO_I]
   connect_bd_net -net spi1_csn_i_1 [get_bd_ports spi1_csn_i] [get_bd_pins sys_ps7/SPI1_SS_I]
   connect_bd_net -net spi1_sdi_i_1 [get_bd_ports spi1_sdi_i] [get_bd_pins sys_ps7/SPI1_MISO_I]
-  connect_bd_net -net sys_cpu_clk [get_bd_pins axi_bram_ctrl_0/s_axi_aclk] [get_bd_pins axi_quad_spi_0/ext_spi_clk] [get_bd_pins axi_quad_spi_0/s_axi_aclk] [get_bd_pins jesd/s_axi_aclk] [get_bd_pins proc_sys_reset_0/slowest_sync_clk] [get_bd_pins smartconnect_0/aclk] [get_bd_pins sys_ps7/FCLK_CLK0] [get_bd_pins sys_ps7/M_AXI_GP0_ACLK]
+  connect_bd_net -net sys_cpu_clk [get_bd_pins axi_bram_ctrl_0/s_axi_aclk] [get_bd_pins axi_config_8_reg_0/s_axi_aclk] [get_bd_pins axi_quad_spi_0/ext_spi_clk] [get_bd_pins axi_quad_spi_0/s_axi_aclk] [get_bd_pins jesd/s_axi_aclk] [get_bd_pins proc_sys_reset_0/slowest_sync_clk] [get_bd_pins smartconnect_0/aclk] [get_bd_pins sys_ps7/FCLK_CLK0] [get_bd_pins sys_ps7/M_AXI_GP0_ACLK]
   connect_bd_net -net sys_ps7_FCLK_RESET0_N [get_bd_pins proc_sys_reset_0/ext_reset_in] [get_bd_pins proc_sys_reset_2/ext_reset_in] [get_bd_pins sys_ps7/FCLK_RESET0_N]
   connect_bd_net -net sys_ps7_FCLK_RESET2_N [get_bd_pins proc_sys_reset_1/ext_reset_in] [get_bd_pins sys_ps7/FCLK_RESET2_N]
   connect_bd_net -net sys_ps7_GPIO_O [get_bd_ports gpio_o] [get_bd_pins sys_ps7/GPIO_O]
@@ -1188,19 +1252,14 @@ Flash#Quad SPI Flash#Quad SPI Flash#SD 0#SD 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0
   connect_bd_net -net sys_ps7_SPI1_SS2_O [get_bd_ports spi1_csn_2_o] [get_bd_pins sys_ps7/SPI1_SS2_O]
   connect_bd_net -net sys_ps7_SPI1_SS_O [get_bd_ports spi1_csn_0_o] [get_bd_pins sys_ps7/SPI1_SS_O]
   connect_bd_net -net tx_reset_0_0_1 [get_bd_ports tx_reset] [get_bd_pins jesd/tx_reset_0]
-   connect_bd_net -net tx_sync_0_1 [get_bd_ports tx_sync_0] [get_bd_pins ila_0/probe1] [get_bd_pins jesd/tx_sync]
-   connect_bd_net -net tx_sysref_0_1 [get_bd_ports sysref_in] [get_bd_pins ila_0/probe0] [get_bd_pins jesd/sysref_in]
-   connect_bd_net -net tx_tdata_1 [get_bd_ports tx_tdata_0] [get_bd_pins ila_0/probe5] [get_bd_pins jesd/tx_tdata] [get_bd_pins util_tx_data_pack_0/tx_tdata]
-  connect_bd_net -net util_rx_data_capture_0_bram_addr_0 [get_bd_pins blk_mem_gen_0/addrb] [get_bd_pins util_rx_data_capture_0/bram_addr_0]
-  connect_bd_net -net util_rx_data_capture_0_bram_clk [get_bd_pins blk_mem_gen_0/clkb] [get_bd_pins util_rx_data_capture_0/bram_clk]
-  connect_bd_net -net util_rx_data_capture_0_bram_din_0 [get_bd_pins blk_mem_gen_0/dinb] [get_bd_pins util_rx_data_capture_0/bram_din_0]
-  connect_bd_net -net util_rx_data_capture_0_bram_en_0 [get_bd_pins blk_mem_gen_0/enb] [get_bd_pins util_rx_data_capture_0/bram_en_0]
-  connect_bd_net -net util_rx_data_capture_0_bram_we_0 [get_bd_pins blk_mem_gen_0/web] [get_bd_pins util_rx_data_capture_0/bram_we_0]
+  connect_bd_net -net tx_sync_0_1 [get_bd_ports tx_sync_0] [get_bd_pins jesd/tx_sync]
+  connect_bd_net -net tx_sysref_0_1 [get_bd_ports sysref_in] [get_bd_pins jesd/sysref_in]
+  connect_bd_net -net tx_tdata_0_1 [get_bd_ports tx_tdata_0] [get_bd_pins jesd/tx_tdata]
 
   # Create address segments
   assign_bd_address -offset 0x00000000 -range 0x40000000 -target_address_space [get_bd_addr_spaces axi_datamover_0/Data_MM2S] [get_bd_addr_segs sys_ps7/S_AXI_HP0/HP0_DDR_LOWOCM] -force
   assign_bd_address -offset 0x40000000 -range 0x00040000 -target_address_space [get_bd_addr_spaces sys_ps7/Data] [get_bd_addr_segs axi_bram_ctrl_0/S_AXI/Mem0] -force
-  assign_bd_address -offset 0x43C40000 -range 0x00010000 -target_address_space [get_bd_addr_spaces sys_ps7/Data] [get_bd_addr_segs axi_fr9009_config_0/s_axi/axi_lite] -force
+  assign_bd_address -offset 0x43C30000 -range 0x00010000 -target_address_space [get_bd_addr_spaces sys_ps7/Data] [get_bd_addr_segs axi_config_8_reg_0/s_axi/axi_lite] -force
   assign_bd_address -offset 0x41E00000 -range 0x00010000 -target_address_space [get_bd_addr_spaces sys_ps7/Data] [get_bd_addr_segs axi_quad_spi_0/AXI_LITE/Reg] -force
   assign_bd_address -offset 0x43C00000 -range 0x00010000 -target_address_space [get_bd_addr_spaces sys_ps7/Data] [get_bd_addr_segs jesd/jesd204_phy/s_axi/Reg] -force
   assign_bd_address -offset 0x43C10000 -range 0x00010000 -target_address_space [get_bd_addr_spaces sys_ps7/Data] [get_bd_addr_segs jesd/jesd204_rx/s_axi/Reg] -force
