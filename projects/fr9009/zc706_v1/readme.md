@@ -50,33 +50,34 @@ make clean-all
 ### 主要配置
 
 #### TX信源
-cfg_0[1:0] --- 置1，配置使能，置0，配置禁用
-cfg_1[31:0] --- dds0 频率控制字
-cfg_2[31:0] --- dds0 相位控制字
-cfg_3[31:0] --- dds1 频率控制字
-cfg_4[31:0] --- dds1 相位控制字
+cfg_0[1:0] --- 置1，配置使能，置0，配置禁用<br>
+cfg_1[31:0] --- dds0 频率控制字<br>
+cfg_2[31:0] --- dds0 相位控制字<br>
+cfg_3[31:0] --- dds1 频率控制字<br>
+cfg_4[31:0] --- dds1 相位控制字<br>
 
-DDS Config: default frequency 10MHz,  
-			lane0/2 data = DDS 0
-			lane1/3 data = DDS 1
+DDS Config
+default frequency 10MHz<br>
+lane0/2 data = DDS 0<br>
+lane1/3 data = DDS 1<br>
 
-信源选择 cfg_0[3:2]
-		00：DDS, 01:DDR, 11:[cfg_5,cfg_6]
-maper选择：cfg_0[4]
-		0: 491.52MHz，1：245.76MHz
+信源选择 cfg_0[3:2]<br>
+00：DDS, 01:DDR, 11:[cfg_5,cfg_6]<br>
+maper选择：cfg_0[4]<br>
+0: 491.52MHz，1：245.76MHz<br>
 
-ddr data play:
-		cfg_0[5]: 上升沿播放。
-		cfg_7[31:0],播放长度配置，最高位写1配置被写入
+ddr data play<br>
+cfg_0[5]: 上升沿播放<br>
+cfg_7[31:0],播放长度配置，最高位写1配置被写入<br>
 
 #### JESD Config
-lanerate 9.8304GHz，Core Clock and refclock = 245.76MHz
-default L=4,F=4,K=32, DAC Sampling rate = 491.52M
+lanerate 9.8304GHz，Core Clock and refclock = 245.76MHz<br>
+default L=4,F=4,K=32, DAC Sampling rate = 491.52M<br>
 
 #### FPGA Pins
-fr9009_rst = gpio_0;
-ad9525_rst = gpio_1;
-ad9582_req = gpio_4;
-jesd_rx_rst = gpio_5;
-jesd_tx_rst = gpio_6;
+fr9009_rst = gpio_0;<br>
+ad9525_rst = gpio_1;<br>
+ad9582_req = gpio_4;<br>
+jesd_rx_rst = gpio_5;<br>
+jesd_tx_rst = gpio_6;<br>
 fr9009_gpio_0 = gpio_7; // FHM Control Pin
