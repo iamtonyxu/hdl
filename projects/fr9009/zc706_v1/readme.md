@@ -94,7 +94,7 @@ DDS Config: default frequency 10MHz,
 			lane0/2 data = DDS 0
 			lane1/3 data = DDS 1
 
-br3109_rst = gpio_0;
+fr9009_rst = gpio_0;
 ad9525_rst = gpio_1;
 ad9582_req = gpio_4;
 jesd_rx_rst = gpio_5;
