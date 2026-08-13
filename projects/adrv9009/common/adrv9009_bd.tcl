@@ -68,6 +68,8 @@ ad_ip_parameter axi_adrv9009_tx_clkgen CONFIG.CLKIN_PERIOD 4
 ad_ip_parameter axi_adrv9009_tx_clkgen CONFIG.VCO_DIV 1
 ad_ip_parameter axi_adrv9009_tx_clkgen CONFIG.VCO_MUL 4
 ad_ip_parameter axi_adrv9009_tx_clkgen CONFIG.CLK0_DIV 4
+ad_ip_parameter axi_adrv9009_tx_clkgen CONFIG.CLK1_DIV 2
+ad_ip_parameter axi_adrv9009_tx_clkgen CONFIG.ENABLE_CLKOUT1 1
 
 ad_ip_instance axi_adxcvr axi_adrv9009_tx_xcvr
 ad_ip_parameter axi_adrv9009_tx_xcvr CONFIG.NUM_OF_LANES $MAX_TX_NUM_OF_LANES
@@ -245,6 +247,53 @@ ad_connect ref_clk axi_adrv9009_tx_clkgen/clk
 ad_xcvrpll $tx_ref_clk util_adrv9009_xcvr/qpll_ref_clk_0
 ad_xcvrpll axi_adrv9009_tx_xcvr/up_pll_rst util_adrv9009_xcvr/up_qpll_rst_0
 
+# Dpd waveform mem
+ad_ip_instance axi_dpd_waveform axi_dpd_waveform_0
+ad_connect axi_adrv9009_tx_clkgen/clk_0 axi_dpd_waveform_0/data_clk
+ad_connect $sys_cpu_resetn axi_dpd_waveform_0/data_rstn
+
+ad_ip_instance axi_dpd_waveform axi_dpd_waveform_1
+ad_connect axi_adrv9009_tx_clkgen/clk_0 axi_dpd_waveform_1/data_clk
+ad_connect $sys_cpu_resetn axi_dpd_waveform_1/data_rstn
+
+# util_luts_addr_gen for DPD Actuator
+ad_ip_instance util_luts_addr_gen util_luts_addr_gen_0
+ad_connect axi_adrv9009_tx_clkgen/clk_0 util_luts_addr_gen_0/data_clk
+ad_connect $sys_cpu_resetn util_luts_addr_gen_0/data_rstn
+ad_connect util_luts_addr_gen_0/data_in_enable VCC
+ad_connect  axi_dpd_waveform_0/data_out util_luts_addr_gen_0/data_in_0
+ad_connect  axi_dpd_waveform_1/data_out util_luts_addr_gen_0/data_in_1
+
+# Dpd Actuator
+ad_ip_instance axi_dpd_actuator axi_dpd_actuator_0
+ad_connect axi_adrv9009_tx_clkgen/clk_0 axi_dpd_actuator_0/data_clk
+ad_connect $sys_cpu_resetn axi_dpd_actuator_0/data_rstn
+ad_connect axi_dpd_actuator_0/data_in_enable_0 util_luts_addr_gen_0/data_out_valid
+
+# Dpd capture sync ctrl
+ad_ip_instance axi_dpd_capture_sync_ctrl axi_dpd_capture_sync_ctrl_0
+ad_connect axi_adrv9009_tx_clkgen/clk_0 axi_dpd_capture_sync_ctrl_0/data_clk
+ad_connect $sys_cpu_resetn axi_dpd_capture_sync_ctrl_0/data_rstn
+ad_connect axi_dpd_capture_sync_ctrl_0/ext_trigger VCC
+
+# Dpd capture (preDPD)
+ad_ip_instance axi_dpd_capture axi_dpd_capture_0
+ad_connect axi_adrv9009_tx_clkgen/clk_0 axi_dpd_capture_0/data_clk
+ad_connect $sys_cpu_resetn axi_dpd_capture_0/data_rstn
+ad_connect util_luts_addr_gen_0/data_out_0 axi_dpd_capture_0/data_in_0
+ad_connect util_luts_addr_gen_0/data_out_1 axi_dpd_capture_0/data_in_1
+ad_connect axi_dpd_capture_sync_ctrl_0/cap_trigger axi_dpd_capture_0/cap_trigger
+ad_connect axi_dpd_capture_sync_ctrl_0/cap_done_0 axi_dpd_capture_0/cap_done
+
+# Dpd capture (postDPD)
+ad_ip_instance axi_dpd_capture axi_dpd_capture_1
+ad_connect axi_adrv9009_tx_clkgen/clk_0 axi_dpd_capture_1/data_clk
+ad_connect $sys_cpu_resetn axi_dpd_capture_1/data_rstn
+ad_connect axi_dpd_actuator_0/data_out_0 axi_dpd_capture_1/data_in_0
+ad_connect axi_dpd_actuator_0/data_out_1 axi_dpd_capture_1/data_in_1
+ad_connect axi_dpd_capture_sync_ctrl_0/cap_trigger axi_dpd_capture_1/cap_trigger
+ad_connect axi_dpd_capture_sync_ctrl_0/cap_done_1 axi_dpd_capture_1/cap_done
+
 # Rx
 if {$RX_NUM_OF_LANES == 2} {
   ad_connect adrv9009_rx_device_clk axi_adrv9009_rx_clkgen/clk_0
@@ -303,6 +352,15 @@ if {$RX_OS_NUM_OF_LANES == 2} {
   ad_connect util_adrv9009_xcvr/rx_3_n rx_data_3_n
 }
 
+# Dpd capture (ORx)
+ad_ip_instance axi_dpd_capture axi_dpd_capture_2
+ad_connect adrv9009_rx_os_device_clk axi_dpd_capture_2/data_clk
+ad_connect $sys_cpu_resetn axi_dpd_capture_2/data_rstn
+ad_connect rx_os_adrv9009_tpl_core/adc_data_0 axi_dpd_capture_2/data_in_0
+ad_connect rx_os_adrv9009_tpl_core/adc_data_1 axi_dpd_capture_2/data_in_1
+ad_connect axi_dpd_capture_sync_ctrl_0/cap_trigger axi_dpd_capture_2/cap_trigger
+ad_connect axi_dpd_capture_sync_ctrl_0/cap_done_2 axi_dpd_capture_2/cap_done
+
 ad_connect ref_clk axi_adrv9009_rx_os_clkgen/clk
 for {set i 0} {$i < $MAX_RX_OS_NUM_OF_LANES} {incr i} {
   # channel indexing starts from the last RX
@@ -339,8 +397,22 @@ for {set i 0} {$i < $TX_NUM_OF_CONVERTERS} {incr i} {
   ad_connect  util_adrv9009_tx_upack/fifo_rd_data_$i  tx_fir_interpolator/data_in_${i}
   ad_connect  util_adrv9009_tx_upack/enable_$i  tx_fir_interpolator/enable_out_${i}
 
-  ad_connect  tx_fir_interpolator/data_out_${i}  tx_adrv9009_tpl_core/dac_data_$i
+#  ad_connect  tx_fir_interpolator/data_out_${i}  tx_adrv9009_tpl_core/dac_data_$i
 }
+#ad_connect  tx_fir_interpolator/data_out_0  util_luts_addr_gen_0/data_in_0
+#ad_connect  tx_fir_interpolator/data_out_1  util_luts_addr_gen_0/data_in_1
+
+ad_connect  util_luts_addr_gen_0/data_out_0  axi_dpd_actuator_0/data_in_0
+ad_connect  util_luts_addr_gen_0/data_out_1  axi_dpd_actuator_0/data_in_1
+ad_connect  util_luts_addr_gen_0/data_out_2  axi_dpd_actuator_0/data_in_2
+
+ad_connect  axi_dpd_actuator_0/data_out_0   tx_adrv9009_tpl_core/dac_data_0
+ad_connect  axi_dpd_actuator_0/data_out_1   tx_adrv9009_tpl_core/dac_data_1
+ad_connect  axi_dpd_waveform_0/data_out     tx_adrv9009_tpl_core/dac_data_2
+ad_connect  axi_dpd_waveform_1/data_out     tx_adrv9009_tpl_core/dac_data_3
+#ad_connect  tx_fir_interpolator/data_out_2  tx_adrv9009_tpl_core/dac_data_2
+#ad_connect  tx_fir_interpolator/data_out_3  tx_adrv9009_tpl_core/dac_data_3
+
 
 ad_connect  tx_fir_interpolator/active dac_fir_filter_active
 
@@ -449,7 +521,13 @@ ad_cpu_interconnect 0x44A50000 axi_adrv9009_rx_os_xcvr
 ad_cpu_interconnect 0x43C20000 axi_adrv9009_rx_os_clkgen
 ad_cpu_interconnect 0x44AB0000 axi_adrv9009_rx_os_jesd
 ad_cpu_interconnect 0x7c440000 axi_adrv9009_rx_os_dma
-ad_cpu_interconnect 0x46000000 axi_rxqec_0
+ad_cpu_interconnect 0x46000000 axi_dpd_actuator_0
+ad_cpu_interconnect 0x46100000 axi_dpd_capture_0
+ad_cpu_interconnect 0x46180000 axi_dpd_capture_1
+ad_cpu_interconnect 0x46200000 axi_dpd_capture_2
+ad_cpu_interconnect 0x46280000 axi_dpd_capture_sync_ctrl_0
+ad_cpu_interconnect 0x46300000 axi_dpd_waveform_0
+ad_cpu_interconnect 0x46400000 axi_dpd_waveform_1
 
 # gt uses hp0, and 100MHz clock for both DRP and AXI4
 

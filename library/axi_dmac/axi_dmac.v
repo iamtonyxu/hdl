@@ -433,7 +433,7 @@ module axi_dmac #(
     .s_axi_rdata(s_axi_rdata),
 
     // Interrupt
-    .irq(irq),
+    .irq(),
 
      // Control interface
     .ctrl_enable(ctrl_enable),
@@ -464,6 +464,8 @@ module axi_dmac #(
     .dbg_status(dbg_status),
     .dbg_ids0(dbg_ids0),
     .dbg_ids1(dbg_ids1));
+
+assign irq = up_dma_req_valid & up_dma_req_ready;
 
   axi_dmac_transfer #(
     .DMA_DATA_WIDTH_SRC(DMA_DATA_WIDTH_SRC),
