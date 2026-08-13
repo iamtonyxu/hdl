@@ -3,18 +3,18 @@
 // Testbench: radio_hw_tb
 //
 // Verifies the radio_hw top-level module via two access paths:
-//   Path 1 (up_if_1): SPI bus  → spi_slave_if   → pcore_registers
-//   Path 2 (up_if_2): AXI-4    → axi2spi_bridge  → pcore_registers
+//   Path 1 (up_if_1): SPI bus  -> spi_slave_if   -> pcore_registers
+//   Path 2 (up_if_2): AXI-4    -> axi2spi_bridge -> pcore_registers
 //                      (internally: up_axi)
 //
 // Tests:
-//   1. Reset values — read via SPI, then via AXI
+//   1. Reset values -- read via SPI, then via AXI
 //   2. SPI  single-side write / read  (R/W registers)
 //   3. AXI  single-side write / read  (R/W registers)
-//   4. Cross-path: SPI write → AXI read  /  AXI write → SPI read
+//   4. Cross-path: SPI write -> AXI read  /  AXI write -> SPI read
 //   5. arm_status: R/W for AXI (up_if_2), R for SPI (up_if_1)
-//   6. Mailbox IRQ — arm_cmd_0[31]==1 via SPI / AXI
-//   7. Priority — simultaneous SPI + AXI writes, SPI wins
+//   6. Mailbox IRQ -- arm_cmd_0[31]==1 via SPI / AXI
+//   7. Priority -- simultaneous SPI + AXI writes, SPI wins
 //
 // Run with ModelSim / Questa:
 //   vlib work
@@ -60,13 +60,13 @@ module radio_hw_tb;
     localparam W_ARM_STATUS_7 = 14'h001B;   // byte 0x006C
 
     //==========================================================================
-    // DUT signals — clocks / reset
+    // DUT signals -- clocks / reset
     //==========================================================================
     reg         s_axi_aclk;
     reg         s_axi_aresetn;
 
     //==========================================================================
-    // DUT signals — AXI-4 bus
+    // DUT signals -- AXI-4 bus
     //==========================================================================
     reg                                 s_axi_awvalid;
     reg   [(AXI_ADDR_W-1):0]            s_axi_awaddr;
@@ -87,7 +87,7 @@ module radio_hw_tb;
     reg                                 s_axi_rready;
 
     //==========================================================================
-    // DUT signals — SPI bus
+    // DUT signals -- SPI bus
     //==========================================================================
     reg         sclk;
     reg         sdi;
@@ -95,7 +95,7 @@ module radio_hw_tb;
     reg         cs_n;
 
     //==========================================================================
-    // DUT signals — interrupt
+    // DUT signals -- interrupt
     //==========================================================================
     wire        spi_mailbox_irq;
 
@@ -138,7 +138,7 @@ module radio_hw_tb;
     always #(UP_CLK_PERIOD / 2.0) s_axi_aclk = ~s_axi_aclk;
 
     //==========================================================================
-    // SPI master task — Mode 0, MSB-first, 64-bit frame, CS-enveloped
+    // SPI master task -- Mode 0, MSB-first, 64-bit frame, CS-enveloped
     //
     // Frame: {rw[63], address[62:32], data[31:0]}
     //   address[62:32] = {15'b0, word_addr[13:0], 2'b00}
@@ -163,13 +163,13 @@ module radio_hw_tb;
         // 64 SCLK cycles
         sdo_buf = 32'd0;
         for (i = 63; i >= 0; i = i - 1) begin
-            // Rising edge — slave samples SDI, master samples SDO
+            // Rising edge -- slave samples SDI, master samples SDO
             sclk = 1'b1;
             if (!rw && i < 32)
                 sdo_buf[i] = sdo;
             #(SCLK_HALF);
 
-            // Falling edge — slave updates SDO, master drives next SDI
+            // Falling edge -- slave updates SDO, master drives next SDI
             sclk = 1'b0;
             if (i > 0) sdi = frame[i-1];
             #(SCLK_HALF);
@@ -210,8 +210,8 @@ module radio_hw_tb;
     // AXI-4 Lite master tasks
     //
     // up_axi requires awvalid & wvalid simultaneously for writes.
-    // Handshake:  present addr+data → wait awready+wready → wait bvalid
-    //             present araddr       → wait arready       → wait rvalid
+    // Handshake:  present addr+data -> wait awready+wready -> wait bvalid
+    //             present araddr       -> wait arready       -> wait rvalid
     //==========================================================================
 
     //------ AXI write ---------------------------------------------------------
@@ -261,7 +261,7 @@ module radio_hw_tb;
     end
     endtask
 
-    //------ AXI byte-address helpers (wrap word-addr → byte-addr) -------------
+    //------ AXI byte-address helpers (wrap word-addr -> byte-addr) -------------
     function [15:0] ba;
         input [13:0] word_addr;
     begin
@@ -273,12 +273,15 @@ module radio_hw_tb;
     // Mailbox IRQ monitor
     //==========================================================================
     reg        irq_seen;
-    reg [31:0] irq_cycle;
+    reg        irq_clear;
 
     always @(posedge s_axi_aclk) begin
-        if (spi_mailbox_irq) begin
-            irq_seen  <= 1'b1;
-            irq_cycle <= $time;
+        if (s_axi_aresetn == 1'b0) begin
+            irq_seen <= 1'b0;
+        end else if (irq_clear) begin
+            irq_seen <= 1'b0;
+        end else if (spi_mailbox_irq) begin
+            irq_seen <= 1'b1;
         end
     end
 
@@ -286,7 +289,6 @@ module radio_hw_tb;
     // Test controller
     //==========================================================================
     reg  [31:0] rd_val;
-    reg  [31:0] rd_val2;
     integer     err_cnt;
     integer     test_num;
     integer     log_fd;
@@ -294,7 +296,6 @@ module radio_hw_tb;
     initial begin
         err_cnt  = 0;
         test_num = 0;
-        irq_seen = 1'b0;
 
         //---------- Init ------------------------------------
         s_axi_awvalid = 1'b0;  s_axi_awaddr = 16'd0;
@@ -321,7 +322,7 @@ module radio_hw_tb;
         repeat (10) @(posedge s_axi_aclk);
 
         //====================================================
-        // Test 1 — Reset values (read via SPI & AXI)
+        // Test 1 -- Reset values (read via SPI & AXI)
         //====================================================
         test_num = test_num + 1;
         $display("--- Test %0d: Reset values ---", test_num);
@@ -348,7 +349,7 @@ module radio_hw_tb;
         axi_read(ba(W_VENDOR_ID),  rd_val);  check("AXI: VENDOR_ID",    rd_val, 32'h0000_ABCD);
 
         //====================================================
-        // Test 2 — SPI single-side write / read
+        // Test 2 -- SPI single-side write / read
         //====================================================
         test_num = test_num + 1;
         $display("--- Test %0d: SPI single-side write/read ---", test_num);
@@ -361,7 +362,7 @@ module radio_hw_tb;
         spi_write(W_ARM_CMD_7, 32'hFFFF_0007);  spi_read(W_ARM_CMD_7, rd_val);  check("ARM_CMD_7", rd_val, 32'hFFFF_0007);
 
         //====================================================
-        // Test 3 — AXI single-side write / read
+        // Test 3 -- AXI single-side write / read
         //====================================================
         test_num = test_num + 1;
         $display("--- Test %0d: AXI single-side write/read ---", test_num);
@@ -373,7 +374,7 @@ module radio_hw_tb;
         axi_write(ba(W_ARM_CMD_2), 32'h7777_8888);  axi_read(ba(W_ARM_CMD_2), rd_val);  check("ARM_CMD_2 via AXI", rd_val, 32'h7777_8888);
 
         //====================================================
-        // Test 4 — Cross-path: SPI write → AXI read, AXI write → SPI read
+        // Test 4 -- Cross-path: SPI write -> AXI read, AXI write -> SPI read
         //====================================================
         test_num = test_num + 1;
         $display("--- Test %0d: Cross-path access ---", test_num);
@@ -394,16 +395,16 @@ module radio_hw_tb;
         axi_read(ba(W_ARM_CMD_4), rd_val);  check("Cross ARM_CMD_4", rd_val, 32'hBEEF_0004);
 
         //====================================================
-        // Test 5 — arm_status: R/W for AXI (up_if_2), R for SPI (up_if_1)
+        // Test 5 -- arm_status: R/W for AXI (up_if_2), R for SPI (up_if_1)
         //====================================================
         test_num = test_num + 1;
         $display("--- Test %0d: arm_status access control ---", test_num);
         $fdisplay(log_fd, "--- Test %0d: arm_status access control ---", test_num);
 
-        // AXI writes arm_status — should succeed
+        // AXI writes arm_status -- should succeed
         axi_write(ba(W_ARM_STATUS_0), 32'hCAFE_0000);
         axi_read(ba(W_ARM_STATUS_0), rd_val);  check("AXI W->R ARM_STATUS_0", rd_val, 32'hCAFE_0000);
-        // SPI reads — should see the AXI-written value
+        // SPI reads -- should see the AXI-written value
         spi_read(W_ARM_STATUS_0, rd_val);  check("SPI read ARM_STATUS_0", rd_val, 32'hCAFE_0000);
 
         axi_write(ba(W_ARM_STATUS_3), 32'hBABE_0003);
@@ -411,7 +412,7 @@ module radio_hw_tb;
         spi_read(W_ARM_STATUS_3, rd_val);  check("SPI read ARM_STATUS_3", rd_val, 32'hBABE_0003);
         axi_read(ba(W_ARM_STATUS_7), rd_val); check("AXI read ARM_STATUS_7", rd_val, 32'hDEAD_0007);
 
-        // SPI tries to write arm_status — should be ignored (R for up_if_1)
+        // SPI tries to write arm_status -- should be ignored (R for up_if_1)
         spi_write(W_ARM_STATUS_0, 32'hFFFF_FFFF);
         spi_read(W_ARM_STATUS_0, rd_val);   check("SPI W->R ARM_STATUS_0 (ignored)", rd_val, 32'hCAFE_0000);
         axi_read(ba(W_ARM_STATUS_0), rd_val); check("AXI view ARM_STATUS_0 unchanged", rd_val, 32'hCAFE_0000);
@@ -423,14 +424,14 @@ module radio_hw_tb;
         axi_read(ba(W_ARM_STATUS_7), rd_val); check("AXI view ARM_STATUS_7 unchanged", rd_val, 32'hDEAD_0007);
 
         //====================================================
-        // Test 6 — Mailbox IRQ
+        // Test 6 -- Mailbox IRQ
         //====================================================
         test_num = test_num + 1;
-        $display("--- Test %0d: Mailbox IRQ — arm_cmd_0[31]==1 ---", test_num);
-        $fdisplay(log_fd, "--- Test %0d: Mailbox IRQ — arm_cmd_0[31]==1 ---", test_num);
+        $display("--- Test %0d: Mailbox IRQ -- arm_cmd_0[31]==1 ---", test_num);
+        $fdisplay(log_fd, "--- Test %0d: Mailbox IRQ -- arm_cmd_0[31]==1 ---", test_num);
 
         // SPI triggers IRQ
-        irq_seen = 1'b0;
+        clear_irq;
         spi_write(W_ARM_CMD_0, 32'h8000_1234);
         repeat (5) @(posedge s_axi_aclk);
         check_irq("IRQ via SPI arm_cmd_0[31]==1", 1'b1);
@@ -438,43 +439,43 @@ module radio_hw_tb;
         spi_read(W_ARM_CMD_0, rd_val);  check("ARM_CMD_0[31] auto-clear (SPI)", rd_val, 32'h0000_1234);
 
         // No IRQ when bit31==0
-        irq_seen = 1'b0;
+        clear_irq;
         spi_write(W_ARM_CMD_0, 32'h0000_5678);
         repeat (5) @(posedge s_axi_aclk);
         check_irq("No IRQ on arm_cmd_0[31]==0", 1'b0);
 
         // AXI triggers IRQ
-        irq_seen = 1'b0;
+        clear_irq;
         axi_write(ba(W_ARM_CMD_0), 32'h8000_9ABC);
         repeat (5) @(posedge s_axi_aclk);
         check_irq("IRQ via AXI arm_cmd_0[31]==1", 1'b1);
         axi_read(ba(W_ARM_CMD_0), rd_val);  check("ARM_CMD_0[31] auto-clear (AXI)", rd_val, 32'h0000_9ABC);
 
         //====================================================
-        // Test 7 — Priority: simultaneous SPI + AXI writes
+        // Test 7 -- Priority: simultaneous SPI + AXI writes
         //====================================================
         test_num = test_num + 1;
-        $display("--- Test %0d: Priority — simultaneous SPI+AXI writes ---", test_num);
-        $fdisplay(log_fd, "--- Test %0d: Priority — simultaneous SPI+AXI writes ---", test_num);
+        $display("--- Test %0d: Priority -- simultaneous SPI+AXI writes ---", test_num);
+        $fdisplay(log_fd, "--- Test %0d: Priority -- simultaneous SPI+AXI writes ---", test_num);
 
-        // Sequential priority: SPI first then AXI — last writer (AXI) wins
+        // Sequential priority: SPI first then AXI -- last writer (AXI) wins
         spi_write(W_SRR, 32'h5A10_0001);
         axi_write(ba(W_SRR), 32'hA510_0001);
-        spi_read(W_SRR, rd_val);   check("Seq: SPI first then AXI → AXI wins", rd_val, 32'hA510_0001);
+        spi_read(W_SRR, rd_val);   check("Seq: SPI first then AXI -> AXI wins", rd_val, 32'hA510_0001);
 
-        // Reverse order: AXI first, then SPI — last writer (SPI) wins
+        // Reverse order: AXI first, then SPI -- last writer (SPI) wins
         axi_write(ba(W_SRR), 32'hA510_0002);
         spi_write(W_SRR, 32'h5A10_0002);
-        spi_read(W_SRR, rd_val);   check("Seq: AXI first then SPI → SPI wins", rd_val, 32'h5A10_0002);
+        spi_read(W_SRR, rd_val);   check("Seq: AXI first then SPI -> SPI wins", rd_val, 32'h5A10_0002);
 
         // Different addresses, both should succeed independently
         spi_write(W_SPICR,   32'hDEAD_5A10);
         axi_write(ba(W_SCRATCH), 32'hDEAD_A510);
-        spi_read(W_SPICR,   rd_val);   check("Diff addr SPI→SPICR",   rd_val, 32'hDEAD_5A10);
-        axi_read(ba(W_SCRATCH), rd_val); check("Diff addr AXI→SCRATCH", rd_val, 32'hDEAD_A510);
+        spi_read(W_SPICR,   rd_val);   check("Diff addr SPI->SPICR",   rd_val, 32'hDEAD_5A10);
+        axi_read(ba(W_SCRATCH), rd_val); check("Diff addr AXI->SCRATCH", rd_val, 32'hDEAD_A510);
 
         //====================================================
-        // Test 8 — SPI read-only registers also accessible via AXI
+        // Test 8 -- SPI read-only registers also accessible via AXI
         //====================================================
         test_num = test_num + 1;
         $display("--- Test %0d: Read-only regs unchanged after writes ---", test_num);
@@ -527,6 +528,20 @@ module radio_hw_tb;
             $fdisplay(log_fd, "  FAIL: %0s = 0x%08h  (expected 0x%08h)", name, actual, expected);
             err_cnt = err_cnt + 1;
         end
+    end
+    endtask
+
+    //==========================================================================
+    // Helper: clear the sticky IRQ flag synchronously
+    // (pulses irq_clear for one cycle so irq_seen is cleared by the monitor,
+    //  avoiding the blocking/non-blocking mixing of writing irq_seen directly)
+    //==========================================================================
+    task automatic clear_irq;
+    begin
+        irq_clear = 1'b1;
+        @(posedge s_axi_aclk);
+        irq_clear = 1'b0;
+        @(posedge s_axi_aclk);
     end
     endtask
 
