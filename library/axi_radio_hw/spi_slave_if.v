@@ -79,7 +79,7 @@ module spi_slave_if #(
     localparam SPI_FRAME_BITS  = 64;            // total bits per transaction
     localparam SPI_ADDR_END    = 32;            // address phase ends at bit 32
     localparam SPI_READ_ADDR   = 30;            // read-address latch (2 cycles early)
-    localparam SPI_SDO_START   = 31;            // activate SDO shifter one cycle ahead
+    localparam SPI_SDO_START   = 32;            // activate SDO shifter one cycle ahead
 
     //--------------------------------------------------------------------------
     // Synchronizers — 3-stage for metastability mitigation

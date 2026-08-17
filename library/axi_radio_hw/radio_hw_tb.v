@@ -20,6 +20,11 @@
 //   vlib work
 //   vlog spi_slave_if.v pcore_registers.v up_axi.v axi2spi_bridge.v radio_hw.v radio_hw_tb.v
 //   vsim -c radio_hw_tb -do "run -all; quit"
+//
+// NOTE(2026-08-17): spi_slave_if.v localparam SPI_SDO_START is now 32 (was 31),
+// which is correct for the real STM32 SPI master. This tb's SDO sampling edge
+// has NOT yet been re-aligned to match — see the TODO at the `spi_transfer`
+// task below. Until then, SPI read-back checks will fail with `data >> 1`.
 //////////////////////////////////////////////////////////////////////////////////
 
 module radio_hw_tb;
@@ -162,6 +167,17 @@ module radio_hw_tb;
 
         // 64 SCLK cycles
         sdo_buf = 32'd0;
+        // TODO(2026-08-17): SDO is currently sampled on the raw sclk RISING edge,
+        // which matched the old DUT localparam SPI_SDO_START = 31. After the DUT
+        // changed it to 32 (correct for the real STM32 SPI master), the DUT's
+        // 3-stage synchronizer + edge-detect + sdo register add ~1 sclk-cycle of
+        // latency, so sdo = bit(b) is only valid at the raw FALLING edge of bit b,
+        // not at the rising edge. Sampling on the rising edge therefore reads
+        // `data >> 1` (MSB dropped, LSB lost) — e.g. read 0xdeadbeef -> 0x6f56df77.
+        //
+        // Fix direction: move the `sdo_buf[i] = sdo` capture into the sclk = 0
+        // (falling-edge) half of the loop below. That captures all 32 bits,
+        // including bit 0.
         for (i = 63; i >= 0; i = i - 1) begin
             // Rising edge -- slave samples SDI, master samples SDO
             sclk = 1'b1;
